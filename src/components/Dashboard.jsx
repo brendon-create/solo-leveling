@@ -22,48 +22,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
   const [showAppScriptReminder, setShowAppScriptReminder] = useState(false)
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
 
-  // 檢查是否設定了Apps Script URL
-  useEffect(() => {
-    const onboardingComplete = localStorage.getItem('solo-leveling-onboarding-complete')
-    const hasAppScriptUrl = localStorage.getItem('solo-leveling-webapp-url')
-    const reminderDismissed = localStorage.getItem('solo-leveling-appscript-reminder-dismissed')
-
-    // 如果完成新手教學但沒有設定URL，且未關閉提醒，顯示提醒
-    if (onboardingComplete && !hasAppScriptUrl && !reminderDismissed) {
-      setTimeout(() => setShowAppScriptReminder(true), 1000) // 延遲1秒顯示
-    }
-  }, [])
-
-  // 檢查是否需要顯示反饋提示（第一次 Day 3，之後每 7-10 天隨機跳出）
-  useEffect(() => {
-    const lastFeedbackDay = parseInt(localStorage.getItem('solo-leveling-last-feedback-day') || '0')
-    const nextFeedbackInterval = parseInt(localStorage.getItem('solo-leveling-next-feedback-interval') || '0')
-
-    let shouldShow = false
-
-    // 情況1：從未顯示過，且已到 Day 3
-    if (lastFeedbackDay === 0 && totalDays >= 3) {
-      shouldShow = true
-    }
-    // 情況2：已顯示過，且距離上次已超過設定的間隔天數
-    else if (lastFeedbackDay > 0 && (totalDays - lastFeedbackDay) >= nextFeedbackInterval) {
-      shouldShow = true
-    }
-
-    if (shouldShow) {
-      const timer = setTimeout(() => {
-        setShowFeedbackModal(true)
-        // 記錄本次顯示的 Day
-        localStorage.setItem('solo-leveling-last-feedback-day', totalDays.toString())
-        // 隨機生成下次間隔（7-10 天）
-        const nextInterval = Math.floor(Math.random() * 4) + 7 // 7, 8, 9, 或 10 天
-        localStorage.setItem('solo-leveling-next-feedback-interval', nextInterval.toString())
-      }, 10000) // 10秒後彈出
-
-      return () => clearTimeout(timer)
-    }
-  }, [totalDays])
-
+  // 先定義所有狀態變量
   const [questData, setQuestData] = useState(() => {
     const saved = localStorage.getItem('solo-leveling-quests')
     if (saved) {
@@ -73,7 +32,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
       const now = new Date()
       const resetTime = new Date()
       resetTime.setHours(4, 0, 0, 0)
-
+      
       if (lastDate && new Date(lastDate) < resetTime && now >= resetTime) {
         return getInitialQuestData()
       }
@@ -87,6 +46,48 @@ export default function Dashboard({ sheetUrl, onReset }) {
     // 確保至少是第1天
     return saved > 0 ? saved : 1
   })
+
+  // 檢查是否設定了Apps Script URL
+  useEffect(() => {
+    const onboardingComplete = localStorage.getItem('solo-leveling-onboarding-complete')
+    const hasAppScriptUrl = localStorage.getItem('solo-leveling-webapp-url')
+    const reminderDismissed = localStorage.getItem('solo-leveling-appscript-reminder-dismissed')
+    
+    // 如果完成新手教學但沒有設定URL，且未關閉提醒，顯示提醒
+    if (onboardingComplete && !hasAppScriptUrl && !reminderDismissed) {
+      setTimeout(() => setShowAppScriptReminder(true), 1000) // 延遲1秒顯示
+    }
+  }, [])
+
+  // 檢查是否需要顯示反饋提示（第一次 Day 3，之後每 7-10 天隨機跳出）
+  useEffect(() => {
+    const lastFeedbackDay = parseInt(localStorage.getItem('solo-leveling-last-feedback-day') || '0')
+    const nextFeedbackInterval = parseInt(localStorage.getItem('solo-leveling-next-feedback-interval') || '0')
+    
+    let shouldShow = false
+    
+    // 情況1：從未顯示過，且已到 Day 3
+    if (lastFeedbackDay === 0 && totalDays >= 3) {
+      shouldShow = true
+    }
+    // 情況2：已顯示過，且距離上次已超過設定的間隔天數
+    else if (lastFeedbackDay > 0 && (totalDays - lastFeedbackDay) >= nextFeedbackInterval) {
+      shouldShow = true
+    }
+    
+    if (shouldShow) {
+      const timer = setTimeout(() => {
+        setShowFeedbackModal(true)
+        // 記錄本次顯示的 Day
+        localStorage.setItem('solo-leveling-last-feedback-day', totalDays.toString())
+        // 隨機生成下次間隔（7-10 天）
+        const nextInterval = Math.floor(Math.random() * 4) + 7 // 7, 8, 9, 或 10 天
+        localStorage.setItem('solo-leveling-next-feedback-interval', nextInterval.toString())
+      }, 10000) // 10秒後彈出
+      
+      return () => clearTimeout(timer)
+    }
+  }, [totalDays])
 
   // 初始化時確保天數至少為1
   useEffect(() => {
