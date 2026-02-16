@@ -97,64 +97,101 @@ export default function Dashboard({ sheetUrl, onReset }) {
     }
   }, [])
 
-  // 🔄 多設備同步：啟動時從雲端讀取最新數據
-  useEffect(() => {
-    const syncFromCloud = async () => {
-      try {
-        const webAppUrl = localStorage.getItem('solo-leveling-webapp-url')
-        if (!webAppUrl) {
-          console.log('ℹ️ 未設置 Apps Script URL，跳過雲端同步')
-          return
-        }
+  // 🔄 多設備同步：從雲端讀取最新數據
+  const [isSyncing, setIsSyncing] = useState(false)
 
-        console.log('🔄 檢查雲端數據...')
-        const cloudData = await fetchFromSheet()
+  const syncFromCloud = async (showLog = true) => {
+    if (isSyncing) {
+      console.log('⏳ 同步進行中，跳過')
+      return
+    }
 
-        if (!cloudData) {
-          console.log('ℹ️ 雲端無數據或讀取失敗')
-          return
-        }
+    try {
+      setIsSyncing(true)
+      const webAppUrl = localStorage.getItem('solo-leveling-webapp-url')
+      if (!webAppUrl) {
+        if (showLog) console.log('ℹ️ 未設置 Apps Script URL，跳過雲端同步')
+        return
+      }
 
-        // 比較本地和雲端的時間戳
-        const localLastUpdate = questData.lastUpdate ? new Date(questData.lastUpdate).getTime() : 0
-        const cloudLastUpdate = cloudData.lastUpdate ? new Date(cloudData.lastUpdate).getTime() : 0
+      if (showLog) console.log('🔄 檢查雲端數據...')
+      const cloudData = await fetchFromSheet()
 
+      if (!cloudData) {
+        if (showLog) console.log('ℹ️ 雲端無數據或讀取失敗')
+        return
+      }
+
+      // 比較本地和雲端的時間戳
+      const localLastUpdate = questData.lastUpdate ? new Date(questData.lastUpdate).getTime() : 0
+      const cloudLastUpdate = cloudData.lastUpdate ? new Date(cloudData.lastUpdate).getTime() : 0
+
+      if (showLog) {
         console.log('📊 本地更新時間:', localLastUpdate ? new Date(localLastUpdate).toLocaleString() : '無數據（初始狀態）')
         console.log('☁️ 雲端更新時間:', cloudLastUpdate ? new Date(cloudLastUpdate).toLocaleString() : '無數據')
+      }
 
-        // 如果本地無真實數據（lastUpdate 為 null），或雲端數據較新，使用雲端數據
-        if (!questData.lastUpdate || cloudLastUpdate > localLastUpdate) {
-          console.log('✅ 雲端數據較新，正在同步到本地...')
-          
-          // 保留本地的實時數據（如 waterRecords）
-          const mergedQuestData = {
-            ...cloudData.questData,
-            hp: {
-              ...cloudData.questData.hp,
-              waterRecords: questData.hp?.waterRecords || [] // 保留本地的飲水記錄
-            }
+      // 如果本地無真實數據（lastUpdate 為 null），或雲端數據較新，使用雲端數據
+      if (!questData.lastUpdate || cloudLastUpdate > localLastUpdate) {
+        console.log('✅ 雲端數據較新，正在同步到本地...')
+        
+        // 保留本地的實時數據（如 waterRecords）
+        const mergedQuestData = {
+          ...cloudData.questData,
+          hp: {
+            ...cloudData.questData.hp,
+            waterRecords: questData.hp?.waterRecords || [] // 保留本地的飲水記錄
           }
-          
-          setQuestData(mergedQuestData)
-          setTotalDays(cloudData.totalDays)
-          
-          // 更新 localStorage
-          localStorage.setItem('solo-leveling-quests', JSON.stringify(mergedQuestData))
-          localStorage.setItem('solo-leveling-total-days', cloudData.totalDays.toString())
-          
-          console.log('✅ 已從雲端同步最新數據（已保留本地實時記錄）')
-        } else {
-          console.log('ℹ️ 本地數據已是最新')
         }
-      } catch (error) {
-        console.error('❌ 雲端同步失敗:', error)
+        
+        setQuestData(mergedQuestData)
+        setTotalDays(cloudData.totalDays)
+        
+        // 更新 localStorage
+        localStorage.setItem('solo-leveling-quests', JSON.stringify(mergedQuestData))
+        localStorage.setItem('solo-leveling-total-days', cloudData.totalDays.toString())
+        
+        console.log('✅ 已從雲端同步最新數據（已保留本地實時記錄）')
+      } else {
+        if (showLog) console.log('ℹ️ 本地數據已是最新')
+      }
+    } catch (error) {
+      console.error('❌ 雲端同步失敗:', error)
+    } finally {
+      setIsSyncing(false)
+    }
+  }
+
+  // 首次載入時同步
+  useEffect(() => {
+    const timer = setTimeout(() => syncFromCloud(true), 1000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // 頁面獲得焦點時自動同步（切換回分頁時）
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('👁️ 頁面獲得焦點，檢查雲端更新...')
+        syncFromCloud(false)
       }
     }
 
-    // 延遲 1 秒執行，避免干擾初始化
-    const timer = setTimeout(syncFromCloud, 1000)
-    return () => clearTimeout(timer)
-  }, []) // 只在組件首次掛載時執行
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [questData])
+
+  // 定期同步（每 60 秒）
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!document.hidden) {  // 只在頁面可見時同步
+        console.log('⏰ 定期檢查雲端更新...')
+        syncFromCloud(false)
+      }
+    }, 60000) // 60 秒
+
+    return () => clearInterval(interval)
+  }, [questData])
 
   // 每週提醒更新長期目標（每7天，第一次使用後一週才提醒）
   useEffect(() => {
@@ -466,12 +503,26 @@ export default function Dashboard({ sheetUrl, onReset }) {
               Day {totalDays} ({format(new Date(), 'yyyy/MM/dd')}) / Day 100 ({getDay100Date()})
             </p>
           </div>
-          <button
-            onClick={() => setShowSettings(true)}
-            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm border border-gray-700"
-          >
-            ⚙️ 設定
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => syncFromCloud(true)}
+              disabled={isSyncing}
+              className={`px-4 py-2 rounded-lg text-sm border transition-all duration-200 ${
+                isSyncing 
+                  ? 'bg-gray-700 text-gray-500 border-gray-600 cursor-not-allowed' 
+                  : 'bg-blue-800 hover:bg-blue-700 text-blue-300 border-blue-700 hover:border-blue-600'
+              }`}
+              title="手動同步雲端數據"
+            >
+              {isSyncing ? '⏳ 同步中...' : '🔄 同步'}
+            </button>
+            <button
+              onClick={() => setShowSettings(true)}
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm border border-gray-700"
+            >
+              ⚙️ 設定
+            </button>
+          </div>
         </div>
 
         {/* 新手教學 */}
