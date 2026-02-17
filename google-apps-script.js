@@ -35,6 +35,9 @@ function doPost(e) {
     const intTasks = (data.int?.tasks || []).map(t => `${t.name}:${t.completed}`).join(';')
     const mpTasks = (data.mp?.tasks || []).map(t => `${t.name}:${t.completed}`).join(';')
     const crtTasks = (data.crt?.tasks || []).map(t => `${t.name}:${t.completed}`).join(';')
+    
+    // waterRecords - 序列化為 JSON 字串
+    const waterRecordsJson = JSON.stringify(data.hp?.waterRecords || [])
 
     // 準備要寫入的數據
     const row = [
@@ -60,6 +63,7 @@ function doPost(e) {
       data.str?.goals?.goal3?.target || 0,
       data.str?.goals?.goal3?.current || 0,
       data.hp?.water || 0,
+      waterRecordsJson,
       data.hp?.waterTarget || 2400,
       data.hp?.wakeTime || '',
       data.hp?.sleepTime || '',
@@ -121,7 +125,7 @@ function initializeSheet(sheet) {
     'STR_目標1名稱', 'STR_目標1單位', 'STR_目標1初始值', 'STR_目標1目標值', 'STR_目標1當前值',
     'STR_目標2名稱', 'STR_目標2單位', 'STR_目標2初始值', 'STR_目標2目標值', 'STR_目標2當前值',
     'STR_目標3名稱', 'STR_目標3單位', 'STR_目標3初始值', 'STR_目標3目標值', 'STR_目標3當前值',
-    'HP_飲水(cc)', 'HP_飲水目標(cc)', 'HP_起床時間', 'HP_就寢時間',
+    'HP_飲水(cc)', 'HP_飲水記錄JSON', 'HP_飲水目標(cc)', 'HP_起床時間', 'HP_就寢時間',
     'HP_早餐自炊', 'HP_早餐禁食',
     'HP_午餐自炊',
     'HP_晚餐自炊', 'HP_晚餐禁食',
@@ -240,54 +244,54 @@ function doGet(e) {
       },
       hp: {
         water: todayRow[21] || 0,
-        waterTarget: todayRow[22] || 2400,
-        wakeTime: todayRow[23] || null,
-        sleepTime: todayRow[24] || null,
-        waterRecords: [], // 這個需要從前端維護
+        waterRecords: todayRow[22] ? JSON.parse(todayRow[22]) : [],
+        waterTarget: todayRow[23] || 2400,
+        wakeTime: todayRow[24] || null,
+        sleepTime: todayRow[25] || null,
         wakeTimeGoals: { best: '05:00', great: '05:30', ok: '06:00', late: '06:00+' },
         sleepTimeGoals: { best: '21:00', great: '21:30', ok: '22:00', late: '22:00+' },
         meals: {
-          breakfast: todayRow[25] || false,
-          lunch: todayRow[27] || false,
-          dinner: todayRow[28] || false
+          breakfast: todayRow[26] || false,
+          lunch: todayRow[28] || false,
+          dinner: todayRow[29] || false
         },
         fasting: {
-          breakfastFast: todayRow[26] || false,
-          dinnerFast: todayRow[29] || false,
-          fullDayFast: todayRow[30] || false
+          breakfastFast: todayRow[27] || false,
+          dinnerFast: todayRow[30] || false,
+          fullDayFast: todayRow[31] || false
         }
       },
       int: {
-        tasks: parseTasks(todayRow[31])
-      },
-      mp: {
         tasks: parseTasks(todayRow[32])
       },
-      crt: {
+      mp: {
         tasks: parseTasks(todayRow[33])
       },
+      crt: {
+        tasks: parseTasks(todayRow[34])
+      },
       gold: {
-        income: todayRow[34] || '',
-        incomeTarget: todayRow[35] || 3000,
-        action1Done: todayRow[36] || false,
-        action1Text: todayRow[37] || '',
-        action2Done: todayRow[38] || false,
-        action2Text: todayRow[39] || '',
-        action3Done: todayRow[40] || false,
-        action3Text: todayRow[41] || ''
+        income: todayRow[35] || '',
+        incomeTarget: todayRow[36] || 3000,
+        action1Done: todayRow[37] || false,
+        action1Text: todayRow[38] || '',
+        action2Done: todayRow[39] || false,
+        action2Text: todayRow[40] || '',
+        action3Done: todayRow[41] || false,
+        action3Text: todayRow[42] || ''
       },
       skl: {
-        enabled: todayRow[42] || false,
-        taskName: todayRow[43] || '',
-        completed: todayRow[44] || false
+        enabled: todayRow[43] || false,
+        taskName: todayRow[44] || '',
+        completed: todayRow[45] || false
       },
       rsn: {
-        celebrated: todayRow[45] || false,
-        gratitude: todayRow[46] || ''
+        celebrated: todayRow[46] || false,
+        gratitude: todayRow[47] || ''
       },
       alcohol: {
-        reason: todayRow[47] || '',
-        feeling: todayRow[48] || ''
+        reason: todayRow[48] || '',
+        feeling: todayRow[49] || ''
       },
       lastUpdate: todayRow[1] ? new Date(todayRow[1]).toISOString() : new Date().toISOString()
     };

@@ -35,7 +35,9 @@ export default function SettingsModal({ isOpen, onClose, currentSheetUrl, onRese
 
   const handleSave = () => {
     if (webAppUrl) {
-      localStorage.setItem('solo-leveling-webapp-url', webAppUrl)
+      // 清理 URL 中的隱藏字符（如換行符、空格等）
+      const cleanedUrl = webAppUrl.trim().replace(/[\u2028\u2029\s]/g, '')
+      localStorage.setItem('solo-leveling-webapp-url', cleanedUrl)
       showLevelingNotification('🎮 遊戲初始化成功！數據同步已啟動，頁面即將重新載入以同步雲端數據...')
     } else {
       onClose()

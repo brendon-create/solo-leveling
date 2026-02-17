@@ -145,10 +145,9 @@ export default function Dashboard({ sheetUrl, onReset }) {
           ...cloudData.questData,
           hp: {
             ...cloudData.questData.hp,
-            // 根據時間戳判斷使用哪邊的 waterRecords
-            waterRecords: (localLastUpdate > cloudLastUpdate) ? (questData.hp?.waterRecords || []) : (cloudData.questData.hp?.waterRecords || []),
-            // 保留本地較新的飲水量
-            water: (questData.hp?.water > cloudData.questData.hp.water) ? questData.hp.water : cloudData.questData.hp.water
+            // 直接使用雲端的 waterRecords（因為已包含完整歷史記錄）
+            waterRecords: cloudData.questData.hp?.waterRecords || [],
+            water: cloudData.questData.hp?.water || 0
           },
           // 確保 INT/MP/CRT tasks 有唯一 id，避免狀態連動
           int: {
