@@ -205,9 +205,11 @@ function doGet(e) {
     // 解析今天的數據（按照 sheet 的欄位順序）
     const parseTasks = (taskString) => {
       if (!taskString) return [];
-      return taskString.split(';').map(item => {
+      return taskString.split(';').map((item, index) => {
         const [name, completed] = item.split(':');
-        return { name, completed: completed === 'true' };
+        // 基於名稱生成穩定的 id（用名稱的 hash）
+        const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_') || `task_${index}`;
+        return { id, name, completed: completed === 'true' };
       });
     };
     

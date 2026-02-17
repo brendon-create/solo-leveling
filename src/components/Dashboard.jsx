@@ -149,7 +149,14 @@ export default function Dashboard({ sheetUrl, onReset }) {
             waterRecords: cloudData.questData.hp?.waterRecords || [],
             water: cloudData.questData.hp?.water || 0
           },
-          // 確保 INT/MP/CRT tasks 有唯一 id，避免狀態連動
+          // 確保 STR/INT/MP/CRT tasks 有唯一 id，避免狀態連動
+          str: {
+            ...cloudData.questData.str,
+            dailyTasks: (cloudData.questData.str?.dailyTasks || []).map((task) => ({
+              ...task,
+              id: task.id || task.name.toLowerCase().replace(/[^a-z0-9]/g, '_') || `str-task-${Math.random().toString(36).substr(2, 9)}`
+            }))
+          },
           int: {
             tasks: (cloudData.questData.int?.tasks || []).map((task) => ({
               ...task,

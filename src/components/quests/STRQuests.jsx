@@ -111,21 +111,23 @@ export default function STRQuests({ data = {}, onUpdate }) {
     <div className="bg-gray-800 border-2 border-red-500/50 rounded-xl p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold text-red-300">💪 STR (體力)</h2>
-        <button
-          onClick={() => {
-            setEditingDailyTasks(dailyTasks)
-            setShowEditDailyTasksModal(true)
-          }}
-          className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300 transition-colors"
-        >
-          ⚙️ <span>設定每日任務</span>
-        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* 左側：每日任務 */}
         <div className="lg:col-span-1">
-          <h3 className="text-lg font-semibold text-red-300 mb-3">每日任務</h3>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-lg font-semibold text-red-300">每日任務</h3>
+            <button
+              onClick={() => {
+                setEditingDailyTasks(dailyTasks)
+                setShowEditDailyTasksModal(true)
+              }}
+              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300 transition-colors"
+            >
+              ⚙️ <span>設定</span>
+            </button>
+          </div>
           <div className="space-y-3">
             {dailyTasks && dailyTasks.length > 0 ? (
               dailyTasks.map((task) => (
