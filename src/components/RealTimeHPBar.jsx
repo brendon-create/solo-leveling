@@ -43,13 +43,13 @@ export default function RealTimeHPBar({ questData, onUpdate }) {
 
       // 使用用戶設定的作息時間來判斷是否追蹤
       const sleepTimeGoals = questData?.sleepTimeGoals || { ok: '22:00' }
-      const wakeTimeGoals = questData?.wakeTimeGoals || { ok: '06:00' }
+      const wakeTimeGoals = questData?.wakeTimeGoals || { best: '05:00' }
       
-      // 解析睡眠時間（取 OK 等級的時間）
+      // 起床時間用 Best（激勵早起喝水），睡覺時間用 OK（合理的睡眠時間）
       const sleepHour = parseInt(sleepTimeGoals.ok.split(':')[0]) || 22
-      const wakeHour = parseInt(wakeTimeGoals.ok.split(':')[0]) || 6
+      const wakeHour = parseInt(wakeTimeGoals.best.split(':')[0]) || 5
       
-      console.log('⏰ 追蹤時段設定: 起床', wakeHour, ':00 - 睡覺', sleepHour, ':00')
+      console.log('⏰ 追蹤時段設定: 起床(Best)', wakeHour, ':00 - 睡覺(OK)', sleepHour, ':00')
       
       // 判斷是否在睡眠時段（不追蹤）
       const isInSleepTime = (sleepHour < wakeHour) 
