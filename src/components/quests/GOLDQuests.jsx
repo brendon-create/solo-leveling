@@ -145,6 +145,7 @@ export default function GOLDQuests({ data = {}, onUpdate }) {
                 value={editingIncomeTarget}
                 onChange={(e) => setEditingIncomeTarget(e.target.value)}
                 onFocus={(e) => e.target.select()}
+                onFocus={(e) => e.target.select()}
                 className="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-gray-200 text-xl focus:outline-none focus:border-yellow-500"
               />
               <p className="text-xs text-gray-500 mt-2">

@@ -398,6 +398,7 @@ export default function HPQuests({ data = {}, onUpdate }) {
                 step="100"
                 value={editingWaterTarget}
                 onChange={(e) => setEditingWaterTarget(e.target.value)}
+                onFocus={(e) => e.target.select()}
                 className="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-gray-200 text-xl focus:outline-none focus:border-blue-500"
               />
               <p className="text-xs text-gray-500 mt-2">建議：成人每日需要 2000-2400 cc</p>

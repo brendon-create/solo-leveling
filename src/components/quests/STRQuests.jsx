@@ -191,6 +191,7 @@ export default function STRQuests({ data = {}, onUpdate }) {
                     onFocus={(e) => e.target.select()}
                     className="w-full px-2 py-1 bg-gray-800 border border-green-600 rounded text-xs text-green-300 font-bold focus:outline-none focus:border-green-400"
                   />
+                  <p className="text-xs text-gray-500 mt-1">💡 建議每週更新當前數值</p>
                 </div>
               </div>
               <div className="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
@@ -251,6 +252,7 @@ export default function STRQuests({ data = {}, onUpdate }) {
                     onFocus={(e) => e.target.select()}
                     className="w-full px-2 py-1 bg-gray-800 border border-green-600 rounded text-xs text-green-300 font-bold focus:outline-none focus:border-green-400"
                   />
+                  <p className="text-xs text-gray-500 mt-1">💡 建議每週更新當前數值</p>
                 </div>
               </div>
               <div className="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
@@ -311,6 +313,7 @@ export default function STRQuests({ data = {}, onUpdate }) {
                     onFocus={(e) => e.target.select()}
                     className="w-full px-2 py-1 bg-gray-800 border border-green-600 rounded text-xs text-green-300 font-bold focus:outline-none focus:border-green-400"
                   />
+                  <p className="text-xs text-gray-500 mt-1">💡 建議每週更新當前數值</p>
                 </div>
               </div>
               <div className="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
@@ -321,10 +324,6 @@ export default function STRQuests({ data = {}, onUpdate }) {
               </div>
             </div>
           </div>
-
-          <div className="mt-3 text-xs text-gray-500">
-            💡 提示：長期目標建議每週更新一次
-          </div>
         </div>
       </div>
 
@@ -333,6 +332,12 @@ export default function STRQuests({ data = {}, onUpdate }) {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-800 border-2 border-red-500 rounded-xl p-6 max-w-md w-full">
             <h3 className="text-xl font-bold text-red-300 mb-4">編輯目標設定</h3>
+            
+            <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3 mb-4">
+              <p className="text-blue-300 text-xs">
+                💡 <strong>建議：</strong>目標設定時，建議與專家（或任何您慣用的 AI 系統）確認合理的目標
+              </p>
+            </div>
 
             <div className="space-y-3">
               <div>

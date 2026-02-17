@@ -28,6 +28,8 @@ export default function Dashboard({ sheetUrl, onReset }) {
     return localStorage.getItem('solo-leveling-player-name') || 'Brendon'
   })
   const [inputName, setInputName] = useState('')
+  const [showNameConflictModal, setShowNameConflictModal] = useState(false)
+  const [conflictNames, setConflictNames] = useState({ local: '', cloud: '' })
 
   // 先定義所有狀態變量
   const [questData, setQuestData] = useState(() => {
@@ -142,33 +144,25 @@ export default function Dashboard({ sheetUrl, onReset }) {
       if (!questData.lastUpdate || cloudLastUpdate > localLastUpdate) {
         console.log('✅ 雲端數據較新，正在同步到本地...')
         
-        // 保留本地的實時數據
+        // 智能合併：取兩邊較新的數據
         const mergedQuestData = {
           ...cloudData.questData,
           hp: {
             ...cloudData.questData.hp,
             waterRecords: questData.hp?.waterRecords || [],
-            water: questData.hp?.water || cloudData.questData.hp.water // 保留本地飲水量
-          },
-          // 確保 tasks 陣列正確同步（使用 id 匹配而非索引）
-          int: {
-            tasks: (cloudData.questData.int?.tasks || []).map((task, index) => ({
-              ...task,
-              id: task.id || `task-${index}`
-            }))
-          },
-          mp: {
-            tasks: (cloudData.questData.mp?.tasks || []).map((task, index) => ({
-              ...task,
-              id: task.id || `task-${index}`
-            }))
-          },
-          crt: {
-            tasks: (cloudData.questData.crt?.tasks || []).map((task, index) => ({
-              ...task,
-              id: task.id || `task-${index}`
-            }))
+            // 保留本地較新的飲水量
+            water: (questData.hp?.water > cloudData.questData.hp.water) ? questData.hp.water : cloudData.questData.hp.water
           }
+        }
+        
+        // 檢查玩家姓名衝突
+        const localPlayerName = localStorage.getItem('solo-leveling-player-name')
+        const cloudPlayerName = cloudData.questData.playerName
+        
+        if (localPlayerName && cloudPlayerName && localPlayerName !== cloudPlayerName) {
+          // 姓名衝突，讓用戶選擇
+          setShowNameConflictModal(true)
+          setConflictNames({ local: localPlayerName, cloud: cloudPlayerName })
         }
         
         setQuestData(mergedQuestData)
@@ -553,6 +547,42 @@ export default function Dashboard({ sheetUrl, onReset }) {
           </div>
         </div>
 
+        {/* 姓名衝突警告 */}
+        {showNameConflictModal && (
+          <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[200] p-4 animate-fade-in">
+            <div className="bg-gradient-to-br from-red-900 to-gray-900 border-4 border-red-500 rounded-xl p-8 max-w-md w-full shadow-2xl animate-scale-in">
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-4">⚠️</div>
+                <h3 className="text-2xl font-bold text-red-300 mb-2">系統警告</h3>
+                <p className="text-gray-300 mb-4">偵測到玩家自我認同衝突</p>
+                <p className="text-sm text-gray-400">系統在不同設備上發現不同的玩家姓名</p>
+              </div>
+              <div className="space-y-3 mb-6">
+                <button
+                  onClick={() => {
+                    setPlayerName(conflictNames.local)
+                    localStorage.setItem('solo-leveling-player-name', conflictNames.local)
+                    setShowNameConflictModal(false)
+                  }}
+                  className="w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all"
+                >
+                  使用本地姓名: {conflictNames.local}
+                </button>
+                <button
+                  onClick={() => {
+                    setPlayerName(conflictNames.cloud)
+                    localStorage.setItem('solo-leveling-player-name', conflictNames.cloud)
+                    setShowNameConflictModal(false)
+                  }}
+                  className="w-full px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all"
+                >
+                  使用雲端姓名: {conflictNames.cloud}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 玩家姓名初始化 */}
         {showPlayerNameModal && (
           <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[200] p-4 animate-fade-in">
@@ -853,6 +883,7 @@ function getInitialQuestData() {
     },
     rsn: { celebrated: false, gratitude: '' },
     alcohol: { reason: '', feeling: '' },
+    playerName: localStorage.getItem('solo-leveling-player-name') || null,
     lastUpdate: null  // 初始數據沒有時間戳，確保雲端數據優先
   }
 }
