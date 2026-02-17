@@ -916,7 +916,7 @@ function getInitialQuestData() {
       completed: false
     },
     rsn: { celebrated: false, gratitude: '' },
-    alcohol: { reason: '', feeling: '' },
+    alcohol: { enabled: true, reason: '', feeling: '' },
     playerName: localStorage.getItem('solo-rpg-player-name') || null,
     lastUpdate: null  // 初始數據沒有時間戳，確保雲端數據優先
   }
