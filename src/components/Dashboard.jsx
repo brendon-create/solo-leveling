@@ -157,6 +157,9 @@ export default function Dashboard({ sheetUrl, onReset }) {
         const migratedCloudData = migrateData(cloudData.questData)
 
         // 智能合併：取兩邊較新的數據
+        console.log('🔍 雲端 waterRecords 數量:', cloudData.questData.hp?.waterRecords?.length || 0)
+        console.log('🔍 雲端 waterRecords 資料:', cloudData.questData.hp?.waterRecords)
+        
         const mergedQuestData = {
           ...migratedCloudData,
           hp: {
@@ -203,6 +206,8 @@ export default function Dashboard({ sheetUrl, onReset }) {
           setConflictNames({ local: localPlayerName, cloud: cloudPlayerName })
         }
 
+        console.log('🔍 合併後 waterRecords 數量:', mergedQuestData.hp?.waterRecords?.length || 0)
+        
         setQuestData(mergedQuestData)
         setTotalDays(cloudData.totalDays)
 
@@ -210,7 +215,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
         localStorage.setItem('solo-rpg-quests', JSON.stringify(mergedQuestData))
         localStorage.setItem('solo-rpg-total-days', cloudData.totalDays.toString())
 
-        console.log('✅ 已從雲端同步最新數據（已保留本地實時記錄）')
+        console.log('✅ 已從雲端同步最新數據（waterRecords:', mergedQuestData.hp?.waterRecords?.length || 0, '筆）')
       } else {
         if (showLog) console.log('ℹ️ 本地數據已是最新')
       }

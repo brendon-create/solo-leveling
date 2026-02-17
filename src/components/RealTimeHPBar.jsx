@@ -263,13 +263,16 @@ export default function RealTimeHPBar({ questData, onUpdate }) {
         {needsWaterWarning ? '⚠️ 飲水HP過低！請立即補充至少200cc水分' : '作息飲食 50% + 飲水 50% = 總體體力水平'}
       </p>
 
-      {/* 調試信息（可選） */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mt-2 text-xs text-gray-500 space-y-1">
-          <div>飲水記錄數: {questData?.waterRecords?.length || 0}</div>
-          <div>最後喝水: {questData?.waterRecords?.length > 0 ? new Date(questData.waterRecords[questData.waterRecords.length - 1].time).toLocaleTimeString() : '無'}</div>
-        </div>
-      )}
+      {/* 調試信息 - 永遠顯示以便診斷問題 */}
+      <div className="mt-2 text-xs text-gray-500 space-y-1">
+        <div>飲水記錄數: {questData?.waterRecords?.length || 0}</div>
+        <div>最後喝水: {questData?.waterRecords?.length > 0 ? new Date(questData.waterRecords[questData.waterRecords.length - 1].time).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }) : '無'}</div>
+        {questData?.waterRecords?.length > 0 && (
+          <div className="text-blue-400">
+            距離上次喝水: {Math.floor((Date.now() - new Date(questData.waterRecords[questData.waterRecords.length - 1].time).getTime()) / 60000)} 分鐘
+          </div>
+        )}
+      </div>
     </div>
   )
 }
