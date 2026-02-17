@@ -172,7 +172,7 @@ export default function RealTimeHPBar({ questData, onUpdate }) {
 
     // 至少間隔5分鐘才發送下一次通知
     if (needsWaterWarning && notificationPermission === 'granted' && (now - lastWarning) > 5 * 60 * 1000) {
-      new Notification('💧 Solo Leveling - 該喝水了！', {
+      new Notification('💧 Solo RPG - 該喝水了！', {
         body: `飲水HP已降至 ${waterHP}%（50%中），請立即補充至少200cc水分！`,
         icon: '/vite.svg',
         tag: 'water-warning',
@@ -222,9 +222,6 @@ export default function RealTimeHPBar({ questData, onUpdate }) {
             </span>
           )}
         </div>
-
-        {/* 50% 分隔線 */}
-        <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gray-700" />
       </div>
 
       {/* 圖例 */}

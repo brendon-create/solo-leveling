@@ -3,7 +3,7 @@ import { useState } from 'react'
 export default function SetupPage({ onSetupComplete }) {
   const [url, setUrl] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const playerName = localStorage.getItem('solo-leveling-player-name') || 'Player'
+  const playerName = localStorage.getItem('solo-rpg-player-name') || 'Player'
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -29,7 +29,7 @@ export default function SetupPage({ onSetupComplete }) {
           {/* 標題 */}
           <div className="text-center mb-8">
             <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 mb-4">
-              ⚔️ Solo Leveling
+              ⚔️ Solo RPG by BCCT
             </h1>
             <p className="text-xl text-purple-300 mb-2">{playerName} Edition</p>
             <p className="text-gray-400 text-sm">成為更強大的自己</p>

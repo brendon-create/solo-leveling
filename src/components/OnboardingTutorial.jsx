@@ -149,7 +149,7 @@ function doGet(e) {
     if (step < totalSteps) {
       setStep(step + 1)
     } else {
-      localStorage.setItem('solo-leveling-onboarding-complete', 'true')
+      localStorage.setItem('solo-rpg-onboarding-complete', 'true')
       onComplete()
     }
   }
@@ -159,7 +159,7 @@ function doGet(e) {
   }
 
   const skipTutorial = () => {
-    localStorage.setItem('solo-leveling-onboarding-complete', 'true')
+    localStorage.setItem('solo-rpg-onboarding-complete', 'true')
     onComplete()
   }
 
@@ -185,7 +185,7 @@ function doGet(e) {
           {step === 1 && (
             <div className="text-center">
               <div className="text-6xl mb-4">⚔️</div>
-              <h2 className="text-3xl font-bold text-purple-300 mb-4">歡迎來到 Solo Leveling！</h2>
+              <h2 className="text-3xl font-bold text-purple-300 mb-4">歡迎來到 Solo RPG by BCCT！</h2>
               <p className="text-lg text-gray-300 mb-6">
                 這是一個 RPG 風格的自我成長追蹤系統<br />
                 讓我們花幾分鐘設定，開始你的升級之旅！

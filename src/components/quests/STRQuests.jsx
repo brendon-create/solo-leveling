@@ -5,6 +5,11 @@ export default function STRQuests({ data = {}, onUpdate }) {
     jogging,
     weightTraining,
     hiit,
+    dailyTasks = [
+      { id: 'jogging', name: '🏃 慢跑', completed: false },
+      { id: 'weightTraining', name: '🏋️ 重訓', completed: false },
+      { id: 'hiit', name: '⚡ HIIT', completed: false }
+    ],
     goals = {
       goal1: { name: 'VO2 Max', unit: '', initial: 33, target: 42, current: 33 },
       goal2: { name: '體脂率', unit: '%', initial: 26, target: 18, current: 26 },
@@ -13,7 +18,9 @@ export default function STRQuests({ data = {}, onUpdate }) {
   } = data
 
   const [showEditGoalModal, setShowEditGoalModal] = useState(false)
+  const [showEditDailyTasksModal, setShowEditDailyTasksModal] = useState(false)
   const [editingGoal, setEditingGoal] = useState(null)
+  const [editingDailyTasks, setEditingDailyTasks] = useState(dailyTasks)
 
   const toggle = (field) => {
     onUpdate({ [field]: !data[field] })
@@ -85,6 +92,15 @@ export default function STRQuests({ data = {}, onUpdate }) {
     <div className="bg-gray-800 border-2 border-red-500/50 rounded-xl p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold text-red-300">💪 STR (體力)</h2>
+        <button
+          onClick={() => {
+            setEditingDailyTasks(dailyTasks)
+            setShowEditDailyTasksModal(true)
+          }}
+          className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300 transition-colors"
+        >
+          ⚙️ <span>設定每日任務</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -138,7 +154,7 @@ export default function STRQuests({ data = {}, onUpdate }) {
         {/* 右側：長期目標 */}
         <div className="lg:col-span-3">
           <div className="flex justify-between items-center mb-3">
-            <h3 className="text-sm font-semibold text-red-300">💯 STR目標（每週更新）</h3>
+            <h3 className="text-sm font-semibold text-red-300">💯 STR目標</h3>
           </div>
           <div className="space-y-4">
             {/* 目標1 */}
@@ -193,12 +209,6 @@ export default function STRQuests({ data = {}, onUpdate }) {
                   />
                   <p className="text-xs text-gray-500 mt-1">💡 建議每週更新當前數值</p>
                 </div>
-              </div>
-              <div className="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-red-500 to-orange-500 transition-all duration-500"
-                  style={{ width: `${calculateGoalProgress(goals.goal1)}%` }}
-                />
               </div>
             </div>
 
@@ -255,12 +265,6 @@ export default function STRQuests({ data = {}, onUpdate }) {
                   <p className="text-xs text-gray-500 mt-1">💡 建議每週更新當前數值</p>
                 </div>
               </div>
-              <div className="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-red-500 to-orange-500 transition-all duration-500"
-                  style={{ width: `${calculateGoalProgress(goals.goal2)}%` }}
-                />
-              </div>
             </div>
 
             {/* 目標3 */}
@@ -315,12 +319,6 @@ export default function STRQuests({ data = {}, onUpdate }) {
                   />
                   <p className="text-xs text-gray-500 mt-1">💡 建議每週更新當前數值</p>
                 </div>
-              </div>
-              <div className="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-red-500 to-orange-500 transition-all duration-500"
-                  style={{ width: `${calculateGoalProgress(goals.goal3)}%` }}
-                />
               </div>
             </div>
           </div>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-// Solo Leveling 風格的通知組件
+// Solo RPG 風格的通知組件
 function LevelingNotification({ message, onClose }) {
   return (
     <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[100] p-4 animate-fade-in">
@@ -23,7 +23,7 @@ function LevelingNotification({ message, onClose }) {
 
 export default function SettingsModal({ isOpen, onClose, currentSheetUrl, onReset }) {
   const [webAppUrl, setWebAppUrl] = useState(() => {
-    return localStorage.getItem('solo-leveling-webapp-url') || ''
+    return localStorage.getItem('solo-rpg-webapp-url') || ''
   })
   const [showNotification, setShowNotification] = useState(false)
   const [notificationMessage, setNotificationMessage] = useState('')
@@ -37,7 +37,7 @@ export default function SettingsModal({ isOpen, onClose, currentSheetUrl, onRese
     if (webAppUrl) {
       // 清理 URL 中的隱藏字符（如換行符、空格等）
       const cleanedUrl = webAppUrl.trim().replace(/[\u2028\u2029\s]/g, '')
-      localStorage.setItem('solo-leveling-webapp-url', cleanedUrl)
+      localStorage.setItem('solo-rpg-webapp-url', cleanedUrl)
       showLevelingNotification('🎮 遊戲初始化成功！數據同步已啟動，頁面即將重新載入以同步雲端數據...')
     } else {
       onClose()
@@ -45,7 +45,7 @@ export default function SettingsModal({ isOpen, onClose, currentSheetUrl, onRese
   }
 
   const handleClear = () => {
-    localStorage.removeItem('solo-leveling-webapp-url')
+    localStorage.removeItem('solo-rpg-webapp-url')
     setWebAppUrl('')
     showLevelingNotification('⚠️ 同步連結已移除，數據將僅保存在本地。')
   }

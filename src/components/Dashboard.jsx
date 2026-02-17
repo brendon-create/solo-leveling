@@ -17,19 +17,19 @@ export default function Dashboard({ sheetUrl, onReset }) {
   const [showSettings, setShowSettings] = useState(false)
   const [showGoalReminder, setShowGoalReminder] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(() => {
-    return !localStorage.getItem('solo-leveling-onboarding-complete')
+    return !localStorage.getItem('solo-rpg-onboarding-complete')
   })
   const [showAppScriptReminder, setShowAppScriptReminder] = useState(false)
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
   const [playerName, setPlayerName] = useState(() => {
-    return localStorage.getItem('solo-leveling-player-name') || 'Player'
+    return localStorage.getItem('solo-rpg-player-name') || 'Player'
   })
   const [showNameConflictModal, setShowNameConflictModal] = useState(false)
   const [conflictNames, setConflictNames] = useState({ local: '', cloud: '' })
 
   // 先定義所有狀態變量
   const [questData, setQuestData] = useState(() => {
-    const saved = localStorage.getItem('solo-leveling-quests')
+    const saved = localStorage.getItem('solo-rpg-quests')
     if (saved) {
       const data = JSON.parse(saved)
       // 檢查是否需要重置（凌晨 4 點）
@@ -47,16 +47,16 @@ export default function Dashboard({ sheetUrl, onReset }) {
   })
 
   const [totalDays, setTotalDays] = useState(() => {
-    const saved = parseInt(localStorage.getItem('solo-leveling-total-days') || '0')
+    const saved = parseInt(localStorage.getItem('solo-rpg-total-days') || '0')
     // 確保至少是第1天
     return saved > 0 ? saved : 1
   })
 
   // 檢查是否設定了Apps Script URL
   useEffect(() => {
-    const onboardingComplete = localStorage.getItem('solo-leveling-onboarding-complete')
-    const hasAppScriptUrl = localStorage.getItem('solo-leveling-webapp-url')
-    const reminderDismissed = localStorage.getItem('solo-leveling-appscript-reminder-dismissed')
+    const onboardingComplete = localStorage.getItem('solo-rpg-onboarding-complete')
+    const hasAppScriptUrl = localStorage.getItem('solo-rpg-webapp-url')
+    const reminderDismissed = localStorage.getItem('solo-rpg-appscript-reminder-dismissed')
     
     // 如果完成新手教學但沒有設定URL，且未關閉提醒，顯示提醒
     if (onboardingComplete && !hasAppScriptUrl && !reminderDismissed) {
@@ -66,8 +66,8 @@ export default function Dashboard({ sheetUrl, onReset }) {
 
   // 檢查是否需要顯示反饋提示（第一次 Day 3，之後每 7-10 天隨機跳出）
   useEffect(() => {
-    const lastFeedbackDay = parseInt(localStorage.getItem('solo-leveling-last-feedback-day') || '0')
-    const nextFeedbackInterval = parseInt(localStorage.getItem('solo-leveling-next-feedback-interval') || '0')
+    const lastFeedbackDay = parseInt(localStorage.getItem('solo-rpg-last-feedback-day') || '0')
+    const nextFeedbackInterval = parseInt(localStorage.getItem('solo-rpg-next-feedback-interval') || '0')
     
     let shouldShow = false
     
@@ -84,10 +84,10 @@ export default function Dashboard({ sheetUrl, onReset }) {
       const timer = setTimeout(() => {
         setShowFeedbackModal(true)
         // 記錄本次顯示的 Day
-        localStorage.setItem('solo-leveling-last-feedback-day', totalDays.toString())
+        localStorage.setItem('solo-rpg-last-feedback-day', totalDays.toString())
         // 隨機生成下次間隔（7-10 天）
         const nextInterval = Math.floor(Math.random() * 4) + 7 // 7, 8, 9, 或 10 天
-        localStorage.setItem('solo-leveling-next-feedback-interval', nextInterval.toString())
+        localStorage.setItem('solo-rpg-next-feedback-interval', nextInterval.toString())
       }, 10000) // 10秒後彈出
       
       return () => clearTimeout(timer)
@@ -98,7 +98,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
   useEffect(() => {
     if (totalDays < 1) {
       setTotalDays(1)
-      localStorage.setItem('solo-leveling-total-days', '1')
+      localStorage.setItem('solo-rpg-total-days', '1')
     }
   }, [])
 
@@ -113,7 +113,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
 
     try {
       setIsSyncing(true)
-      const webAppUrl = localStorage.getItem('solo-leveling-webapp-url')
+      const webAppUrl = localStorage.getItem('solo-rpg-webapp-url')
       if (!webAppUrl) {
         if (showLog) console.log('ℹ️ 未設置 Apps Script URL，跳過雲端同步')
         return
@@ -171,7 +171,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
         }
         
         // 檢查玩家姓名衝突
-        const localPlayerName = localStorage.getItem('solo-leveling-player-name')
+        const localPlayerName = localStorage.getItem('solo-rpg-player-name')
         const cloudPlayerName = cloudData.questData.playerName
         
         if (localPlayerName && cloudPlayerName && localPlayerName !== cloudPlayerName) {
@@ -184,8 +184,8 @@ export default function Dashboard({ sheetUrl, onReset }) {
         setTotalDays(cloudData.totalDays)
         
         // 更新 localStorage
-        localStorage.setItem('solo-leveling-quests', JSON.stringify(mergedQuestData))
-        localStorage.setItem('solo-leveling-total-days', cloudData.totalDays.toString())
+        localStorage.setItem('solo-rpg-quests', JSON.stringify(mergedQuestData))
+        localStorage.setItem('solo-rpg-total-days', cloudData.totalDays.toString())
         
         console.log('✅ 已從雲端同步最新數據（已保留本地實時記錄）')
       } else {
@@ -231,25 +231,25 @@ export default function Dashboard({ sheetUrl, onReset }) {
 
   // 每週提醒更新長期目標（每7天，第一次使用後一週才提醒）
   useEffect(() => {
-    const lastReminder = localStorage.getItem('solo-leveling-last-goal-reminder')
+    const lastReminder = localStorage.getItem('solo-rpg-last-goal-reminder')
     const now = new Date().getTime()
     const sevenDays = 7 * 24 * 60 * 60 * 1000
 
     // 第一次使用，記錄時間但不顯示提醒
     if (!lastReminder) {
-      localStorage.setItem('solo-leveling-last-goal-reminder', now.toString())
+      localStorage.setItem('solo-rpg-last-goal-reminder', now.toString())
       return
     }
 
     // 超過7天才顯示提醒
     if ((now - parseInt(lastReminder)) > sevenDays) {
       setShowGoalReminder(true)
-      localStorage.setItem('solo-leveling-last-goal-reminder', now.toString())
+      localStorage.setItem('solo-rpg-last-goal-reminder', now.toString())
     }
   }, [totalDays])
 
   const [historyData, setHistoryData] = useState(() => {
-    const saved = localStorage.getItem('solo-leveling-history')
+    const saved = localStorage.getItem('solo-rpg-history')
     return saved ? JSON.parse(saved) : []
   })
 
@@ -270,7 +270,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
 
     // 保留所有歷史（不限制天數，因為需要計算累積）
     setHistoryData(newHistory)
-    localStorage.setItem('solo-leveling-history', JSON.stringify(newHistory))
+    localStorage.setItem('solo-rpg-history', JSON.stringify(newHistory))
   }, [questData])
 
   const getRSNHistory = () => {
@@ -481,7 +481,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
       lastUpdate: new Date().toISOString()
     }
     setQuestData(newQuestData)
-    localStorage.setItem('solo-leveling-quests', JSON.stringify(newQuestData))
+    localStorage.setItem('solo-rpg-quests', JSON.stringify(newQuestData))
 
     // 清除舊的計時器
     if (syncTimer) {
@@ -533,7 +533,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-              ⚔️ Solo Leveling
+              ⚔️ Solo RPG by BCCT
             </h1>
             <p className="text-purple-300 text-lg font-semibold mt-1">{playerName} Edition</p>
             <p className="text-gray-400 text-sm">
@@ -576,7 +576,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
                 <button
                   onClick={() => {
                     setPlayerName(conflictNames.local)
-                    localStorage.setItem('solo-leveling-player-name', conflictNames.local)
+                    localStorage.setItem('solo-rpg-player-name', conflictNames.local)
                     setShowNameConflictModal(false)
                   }}
                   className="w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all"
@@ -586,7 +586,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
                 <button
                   onClick={() => {
                     setPlayerName(conflictNames.cloud)
-                    localStorage.setItem('solo-leveling-player-name', conflictNames.cloud)
+                    localStorage.setItem('solo-rpg-player-name', conflictNames.cloud)
                     setShowNameConflictModal(false)
                   }}
                   className="w-full px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all"
@@ -650,7 +650,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
                   <button
                     onClick={() => {
                       setShowAppScriptReminder(false)
-                      localStorage.setItem('solo-leveling-appscript-reminder-dismissed', 'true')
+                      localStorage.setItem('solo-rpg-appscript-reminder-dismissed', 'true')
                     }}
                     className="flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all"
                   >
@@ -740,6 +740,31 @@ export default function Dashboard({ sheetUrl, onReset }) {
           <SKLQuests data={questData.skl} onUpdate={(data) => updateQuest('skl', data)} />
           <RSNQuests data={questData.rsn} onUpdate={(data) => updateQuest('rsn', data)} />
           <AlcoholAudit data={questData.alcohol} onUpdate={(data) => updateQuest('alcohol', data)} />
+
+          {/* 版權聲明 */}
+          <div className="mt-8 pt-6 border-t border-gray-700">
+            <p className="text-center text-sm text-gray-400 leading-relaxed">
+              <strong className="text-purple-300">Solo RPG</strong> 由 <strong className="text-purple-300">BCCT</strong> (Base Consciousness Creative Training) 設計，永久免費使用。
+              <br />
+              如果您喜歡這個 App，歡迎隨時
+              <a
+                href="mailto:service@brendonchen.com?subject=Solo RPG 使用反饋"
+                className="text-blue-400 hover:text-blue-300 underline mx-1"
+              >
+                提供反饋
+              </a>
+              與
+              <a
+                href="https://p.ecpay.com.tw/B723287"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-yellow-400 hover:text-yellow-300 underline mx-1"
+              >
+                自由贊助
+              </a>
+              ，幫助這個 App 與您一起持續進化。
+            </p>
+          </div>
         </div>
 
         {/* 反饋與贊助提示彈窗 */}
@@ -760,7 +785,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
 
                   <div className="bg-purple-900/30 border border-purple-500/30 rounded-lg p-4 space-y-3">
                     <a
-                      href="mailto:service@brendonchen.com?subject=給 Solo Leveling App 的建議與反饋"
+                      href="mailto:service@brendonchen.com?subject=Solo RPG 使用反饋"
                       className="block w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-center transition-all duration-200 font-medium"
                       onClick={() => setShowFeedbackModal(false)}
                     >
@@ -778,7 +803,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
                     </a>
 
                     <p className="text-xs text-gray-400 text-center">
-                      Solo Leveling 完全免費，您的贊助將幫助我們持續改進
+                      Solo RPG 完全免費，您的贊助將幫助我們持續改進
                     </p>
                   </div>
                 </div>
@@ -858,7 +883,7 @@ function getInitialQuestData() {
     },
     rsn: { celebrated: false, gratitude: '' },
     alcohol: { reason: '', feeling: '' },
-    playerName: localStorage.getItem('solo-leveling-player-name') || null,
+    playerName: localStorage.getItem('solo-rpg-player-name') || null,
     lastUpdate: null  // 初始數據沒有時間戳，確保雲端數據優先
   }
 }

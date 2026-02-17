@@ -5,15 +5,15 @@ import { initializeSheet, syncToSheet } from './services/googleSheets'
 
 function App() {
   const [showPlayerNameModal, setShowPlayerNameModal] = useState(() => {
-    return !localStorage.getItem('solo-leveling-player-name')
+    return !localStorage.getItem('solo-rpg-player-name')
   })
   const [inputName, setInputName] = useState('')
   
   const [sheetUrl, setSheetUrl] = useState(() => {
-    return localStorage.getItem('solo-leveling-sheet-url') || ''
+    return localStorage.getItem('solo-rpg-sheet-url') || ''
   })
   const [isSetup, setIsSetup] = useState(() => {
-    return !!localStorage.getItem('solo-leveling-sheet-url')
+    return !!localStorage.getItem('solo-rpg-sheet-url')
   })
 
   const handleSetupComplete = async (url) => {
@@ -21,7 +21,7 @@ function App() {
       // 初始化 Google Sheet（創建必要的欄位）
       await initializeSheet(url)
       
-      localStorage.setItem('solo-leveling-sheet-url', url)
+      localStorage.setItem('solo-rpg-sheet-url', url)
       setSheetUrl(url)
       setIsSetup(true)
     } catch (error) {
@@ -32,7 +32,7 @@ function App() {
 
   const handleReset = () => {
     if (window.confirm('確定要重置 Google Sheet 連結嗎？這不會刪除您的數據，但需要重新設置。')) {
-      localStorage.removeItem('solo-leveling-sheet-url')
+      localStorage.removeItem('solo-rpg-sheet-url')
       setSheetUrl('')
       setIsSetup(false)
     }
@@ -55,7 +55,7 @@ function App() {
             onKeyPress={(e) => {
               if (e.key === 'Enter' && inputName.trim()) {
                 const name = inputName.trim()
-                localStorage.setItem('solo-leveling-player-name', name)
+                localStorage.setItem('solo-rpg-player-name', name)
                 setShowPlayerNameModal(false)
               }
             }}
@@ -66,7 +66,7 @@ function App() {
           <button
             onClick={() => {
               const name = inputName.trim() || 'Player'
-              localStorage.setItem('solo-leveling-player-name', name)
+              localStorage.setItem('solo-rpg-player-name', name)
               setShowPlayerNameModal(false)
             }}
             className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-lg transition-all duration-200"

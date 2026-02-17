@@ -50,7 +50,7 @@ export const syncToSheet = async (sheetUrl, data) => {
 
   try {
     // 從 localStorage 讀取用戶設定的 Web App URL
-    const webAppUrl = localStorage.getItem('solo-leveling-webapp-url')
+    const webAppUrl = localStorage.getItem('solo-rpg-webapp-url')
     
     if (webAppUrl) {
       // 使用 Apps Script Web App
@@ -85,7 +85,7 @@ export const syncToSheet = async (sheetUrl, data) => {
 export const fetchFromSheet = async () => {
   try {
     // 從 localStorage 讀取用戶設定的 Web App URL
-    const webAppUrl = localStorage.getItem('solo-leveling-webapp-url')
+    const webAppUrl = localStorage.getItem('solo-rpg-webapp-url')
     
     if (!webAppUrl) {
       console.warn('⚠️ 尚未設置 Apps Script Web App URL')
