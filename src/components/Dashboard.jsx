@@ -21,13 +21,9 @@ export default function Dashboard({ sheetUrl, onReset }) {
   })
   const [showAppScriptReminder, setShowAppScriptReminder] = useState(false)
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
-  const [showPlayerNameModal, setShowPlayerNameModal] = useState(() => {
-    return !localStorage.getItem('solo-leveling-player-name')
-  })
   const [playerName, setPlayerName] = useState(() => {
-    return localStorage.getItem('solo-leveling-player-name') || 'Brendon'
+    return localStorage.getItem('solo-leveling-player-name') || 'Player'
   })
-  const [inputName, setInputName] = useState('')
   const [showNameConflictModal, setShowNameConflictModal] = useState(false)
   const [conflictNames, setConflictNames] = useState({ local: '', cloud: '' })
 
@@ -579,46 +575,6 @@ export default function Dashboard({ sheetUrl, onReset }) {
                   使用雲端姓名: {conflictNames.cloud}
                 </button>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* 玩家姓名初始化 */}
-        {showPlayerNameModal && (
-          <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[200] p-4 animate-fade-in">
-            <div className="bg-gradient-to-br from-purple-900 to-gray-900 border-4 border-purple-500 rounded-xl p-8 max-w-md w-full shadow-2xl animate-scale-in">
-              <div className="text-center mb-6">
-                <div className="text-5xl mb-4 animate-pulse">⚡</div>
-                <p className="text-gray-400 text-sm mb-4">系統初始化...</p>
-                <h3 className="text-2xl font-bold text-purple-300">請輸入玩家姓名</h3>
-              </div>
-              <input
-                type="text"
-                value={inputName}
-                onChange={(e) => setInputName(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && inputName.trim()) {
-                    const name = inputName.trim()
-                    setPlayerName(name)
-                    localStorage.setItem('solo-leveling-player-name', name)
-                    setShowPlayerNameModal(false)
-                  }
-                }}
-                placeholder="輸入您的姓名"
-                className="w-full px-4 py-3 bg-gray-900 border-2 border-purple-500 rounded-lg text-gray-200 text-center text-xl focus:outline-none focus:border-purple-400 mb-4"
-                autoFocus
-              />
-              <button
-                onClick={() => {
-                  const name = inputName.trim() || 'Player'
-                  setPlayerName(name)
-                  localStorage.setItem('solo-leveling-player-name', name)
-                  setShowPlayerNameModal(false)
-                }}
-                className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-lg transition-all duration-200"
-              >
-                確認
-              </button>
             </div>
           </div>
         )}

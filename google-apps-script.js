@@ -154,11 +154,13 @@ function doGet(e) {
     
     // 如果 sheet 是空的，返回空數據
     if (sheet.getLastRow() === 0) {
-      return ContentService.createTextOutput(JSON.stringify({
+      const output = ContentService.createTextOutput(JSON.stringify({
         success: true,
         hasData: false,
         message: 'Sheet is empty'
-      })).setMimeType(ContentService.MimeType.JSON);
+      }));
+      output.setMimeType(ContentService.MimeType.JSON);
+      return output;
     }
     
     // 獲取今天的日期
@@ -185,12 +187,14 @@ function doGet(e) {
     
     // 如果沒有今天的記錄，返回總天數和空數據
     if (!todayRow) {
-      return ContentService.createTextOutput(JSON.stringify({
+      const output = ContentService.createTextOutput(JSON.stringify({
         success: true,
         hasData: false,
         totalDays: totalDays,
         message: 'No data for today'
-      })).setMimeType(ContentService.MimeType.JSON);
+      }));
+      output.setMimeType(ContentService.MimeType.JSON);
+      return output;
     }
     
     // 解析今天的數據（按照 sheet 的欄位順序）
@@ -285,18 +289,22 @@ function doGet(e) {
       lastUpdate: todayRow[1] ? new Date(todayRow[1]).toISOString() : new Date().toISOString()
     };
     
-    return ContentService.createTextOutput(JSON.stringify({
+    const output = ContentService.createTextOutput(JSON.stringify({
       success: true,
       hasData: true,
       totalDays: totalDays,
       questData: questData,
       lastUpdate: todayRow[1] ? new Date(todayRow[1]).toISOString() : null
-    })).setMimeType(ContentService.MimeType.JSON);
+    }));
+    output.setMimeType(ContentService.MimeType.JSON);
+    return output;
     
   } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({
+    const output = ContentService.createTextOutput(JSON.stringify({
       success: false,
       error: error.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
+    }));
+    output.setMimeType(ContentService.MimeType.JSON);
+    return output;
   }
 }
