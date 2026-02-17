@@ -300,12 +300,10 @@ export default function Dashboard({ sheetUrl, onReset }) {
 
   const calculateSTRToday = () => {
     // 每日任務分數 (70%)
-    const exercises = [
-      questData.str?.jogging,
-      questData.str?.weightTraining,
-      questData.str?.hiit
-    ].filter(Boolean).length
-    const dailyScore = (exercises / 3) * 70
+    const dailyTasks = questData.str?.dailyTasks || []
+    const completedTasks = dailyTasks.filter(t => t.completed).length
+    const totalTasks = dailyTasks.length || 1 // 避免除以0
+    const dailyScore = (completedTasks / totalTasks) * 70
 
     // 長期目標進度 (30%)
     const goals = questData.str?.goals || {
@@ -826,9 +824,11 @@ export default function Dashboard({ sheetUrl, onReset }) {
 function getInitialQuestData() {
   return {
     str: {
-      jogging: false,
-      weightTraining: false,
-      hiit: false,
+      dailyTasks: [
+        { id: 'jogging', name: '🏃 慢跑', completed: false },
+        { id: 'weightTraining', name: '🏋️ 重訓', completed: false },
+        { id: 'hiit', name: '⚡ HIIT', completed: false }
+      ],
       goals: {
         goal1: { name: 'VO2 Max', unit: '', initial: 33, target: 42, current: 33 },
         goal2: { name: '體脂率', unit: '%', initial: 26, target: 18, current: 26 },

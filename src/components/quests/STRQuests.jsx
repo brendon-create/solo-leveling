@@ -2,9 +2,6 @@ import { useState } from 'react'
 
 export default function STRQuests({ data = {}, onUpdate }) {
   const {
-    jogging,
-    weightTraining,
-    hiit,
     dailyTasks = [
       { id: 'jogging', name: '🏃 慢跑', completed: false },
       { id: 'weightTraining', name: '🏋️ 重訓', completed: false },
@@ -22,8 +19,11 @@ export default function STRQuests({ data = {}, onUpdate }) {
   const [editingGoal, setEditingGoal] = useState(null)
   const [editingDailyTasks, setEditingDailyTasks] = useState(dailyTasks)
 
-  const toggle = (field) => {
-    onUpdate({ [field]: !data[field] })
+  const toggleTask = (taskId) => {
+    const newTasks = dailyTasks.map(task =>
+      task.id === taskId ? { ...task, completed: !task.completed } : task
+    )
+    onUpdate({ dailyTasks: newTasks })
   }
 
   const updateGoal = (goalKey, field, value) => {
@@ -75,7 +75,26 @@ export default function STRQuests({ data = {}, onUpdate }) {
     setShowEditGoalModal(false)
   }
 
-  const completedCount = [jogging, weightTraining, hiit].filter(Boolean).length
+  const saveDailyTasksEdit = () => {
+    onUpdate({ dailyTasks: editingDailyTasks })
+    setShowEditDailyTasksModal(false)
+  }
+
+  const addDailyTask = () => {
+    setEditingDailyTasks([...editingDailyTasks, { id: `task_${Date.now()}`, name: '', completed: false }])
+  }
+
+  const removeDailyTask = (index) => {
+    setEditingDailyTasks(editingDailyTasks.filter((_, i) => i !== index))
+  }
+
+  const updateDailyTaskName = (index, name) => {
+    const newTasks = [...editingDailyTasks]
+    newTasks[index] = { ...newTasks[index], name }
+    setEditingDailyTasks(newTasks)
+  }
+
+  const completedCount = dailyTasks.filter(t => t.completed).length
 
   // 計算長期目標進度
   const calculateGoalProgress = (goal) => {
@@ -108,45 +127,27 @@ export default function STRQuests({ data = {}, onUpdate }) {
         <div className="lg:col-span-1">
           <h3 className="text-lg font-semibold text-red-300 mb-3">每日任務</h3>
           <div className="space-y-3">
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={jogging || false}
-                onChange={() => toggle('jogging')}
-                className="w-6 h-6 rounded border-2 border-red-500 bg-gray-700 checked:bg-red-500 cursor-pointer"
-              />
-              <span className={`text-lg ${jogging ? 'text-green-300 line-through' : 'text-gray-300'} group-hover:text-white transition-colors`}>
-                🏃 慢跑
-              </span>
-            </label>
-
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={weightTraining || false}
-                onChange={() => toggle('weightTraining')}
-                className="w-6 h-6 rounded border-2 border-red-500 bg-gray-700 checked:bg-red-500 cursor-pointer"
-              />
-              <span className={`text-lg ${weightTraining ? 'text-green-300 line-through' : 'text-gray-300'} group-hover:text-white transition-colors`}>
-                🏋️ 重訓
-              </span>
-            </label>
-
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={hiit || false}
-                onChange={() => toggle('hiit')}
-                className="w-6 h-6 rounded border-2 border-red-500 bg-gray-700 checked:bg-red-500 cursor-pointer"
-              />
-              <span className={`text-lg ${hiit ? 'text-green-300 line-through' : 'text-gray-300'} group-hover:text-white transition-colors`}>
-                ⚡ HIIT
-              </span>
-            </label>
+            {dailyTasks && dailyTasks.length > 0 ? (
+              dailyTasks.map((task) => (
+                <label key={task.id} className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={task.completed || false}
+                    onChange={() => toggleTask(task.id)}
+                    className="w-6 h-6 rounded border-2 border-red-500 bg-gray-700 checked:bg-red-500 cursor-pointer"
+                  />
+                  <span className={`text-lg ${task.completed ? 'text-green-300 line-through' : 'text-gray-300'} group-hover:text-white transition-colors`}>
+                    {task.name}
+                  </span>
+                </label>
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm">尚未設定項目，點擊右上角「設定每日任務」進行設定</p>
+            )}
           </div>
           <div className="mt-3 pt-3 border-t border-gray-700">
             <p className="text-xs text-gray-400">
-              完成: {completedCount} / 3
+              完成: {completedCount} / {dailyTasks.length}
             </p>
           </div>
         </div>
@@ -210,6 +211,12 @@ export default function STRQuests({ data = {}, onUpdate }) {
                   <p className="text-xs text-gray-500 mt-1">💡 建議每週更新當前數值</p>
                 </div>
               </div>
+              <div className="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-red-500 to-orange-500 transition-all duration-500"
+                  style={{ width: `${calculateGoalProgress(goals.goal1)}%` }}
+                />
+              </div>
             </div>
 
             {/* 目標2 */}
@@ -265,6 +272,12 @@ export default function STRQuests({ data = {}, onUpdate }) {
                   <p className="text-xs text-gray-500 mt-1">💡 建議每週更新當前數值</p>
                 </div>
               </div>
+              <div className="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-red-500 to-orange-500 transition-all duration-500"
+                  style={{ width: `${calculateGoalProgress(goals.goal2)}%` }}
+                />
+              </div>
             </div>
 
             {/* 目標3 */}
@@ -319,6 +332,12 @@ export default function STRQuests({ data = {}, onUpdate }) {
                   />
                   <p className="text-xs text-gray-500 mt-1">💡 建議每週更新當前數值</p>
                 </div>
+              </div>
+              <div className="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-red-500 to-orange-500 transition-all duration-500"
+                  style={{ width: `${calculateGoalProgress(goals.goal3)}%` }}
+                />
               </div>
             </div>
           </div>
@@ -393,6 +412,57 @@ export default function STRQuests({ data = {}, onUpdate }) {
               </button>
               <button
                 onClick={() => setShowEditGoalModal(false)}
+                className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                取消
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 編輯每日任務彈窗 */}
+      {showEditDailyTasksModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 border-2 border-red-500 rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-red-300 mb-4">設定每日任務</h3>
+
+            <div className="space-y-3 mb-4">
+              {editingDailyTasks.map((task, index) => (
+                <div key={index} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={task.name}
+                    onChange={(e) => updateDailyTaskName(index, e.target.value)}
+                    placeholder={`任務 ${index + 1}`}
+                    className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:border-red-500"
+                  />
+                  <button
+                    onClick={() => removeDailyTask(index)}
+                    className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={addDailyTask}
+              className="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors mb-4"
+            >
+              ➕ 新增任務
+            </button>
+
+            <div className="flex gap-3">
+              <button
+                onClick={saveDailyTasksEdit}
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              >
+                儲存
+              </button>
+              <button
+                onClick={() => setShowEditDailyTasksModal(false)}
                 className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
               >
                 取消
