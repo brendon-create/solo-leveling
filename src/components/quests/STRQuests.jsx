@@ -156,7 +156,7 @@ export default function STRQuests({ data = {}, onUpdate }) {
 
         {/* 右側：長期目標 */}
         <div className="lg:col-span-3">
-          <div className="flex justify-between items-center mb-3">
+          <div className="flex items-center gap-2 mb-3">
             <h3 className="text-sm font-semibold text-red-300">💯 STR目標</h3>
           </div>
           <div className="space-y-4">
