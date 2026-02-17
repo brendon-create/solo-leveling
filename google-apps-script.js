@@ -36,7 +36,7 @@ function doPost(e) {
     const intTasks = (data.int?.tasks || []).map(t => `${t.name}:${t.completed}`).join(';')
     const mpTasks = (data.mp?.tasks || []).map(t => `${t.name}:${t.completed}`).join(';')
     const crtTasks = (data.crt?.tasks || []).map(t => `${t.name}:${t.completed}`).join(';')
-    
+
     // waterRecords - 序列化為 JSON 字串
     const waterRecordsJson = JSON.stringify(data.hp?.waterRecords || [])
 
@@ -156,7 +156,7 @@ function initializeSheet(sheet) {
 function doGet(e) {
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    
+
     // 如果 sheet 是空的，返回空數據
     if (sheet.getLastRow() === 0) {
       const output = ContentService.createTextOutput(JSON.stringify({
@@ -167,17 +167,17 @@ function doGet(e) {
       output.setMimeType(ContentService.MimeType.JSON);
       return output;
     }
-    
+
     // 獲取今天的日期
     const today = new Date();
     const todayDateString = Utilities.formatDate(today, Session.getScriptTimeZone(), 'yyyy-MM-dd');
-    
+
     // 查找今天的記錄
     const dataRange = sheet.getDataRange();
     const values = dataRange.getValues();
     let todayRow = null;
     let totalDays = 0;
-    
+
     for (let i = 1; i < values.length; i++) {
       totalDays++; // 計算總天數
       const rowDate = values[i][0];
@@ -189,7 +189,7 @@ function doGet(e) {
         }
       }
     }
-    
+
     // 如果沒有今天的記錄，返回總天數和空數據
     if (!todayRow) {
       const output = ContentService.createTextOutput(JSON.stringify({
@@ -201,7 +201,7 @@ function doGet(e) {
       output.setMimeType(ContentService.MimeType.JSON);
       return output;
     }
-    
+
     // 解析今天的數據（按照 sheet 的欄位順序）
     const parseTasks = (taskString) => {
       if (!taskString) return [];
@@ -212,7 +212,7 @@ function doGet(e) {
         return { id, name, completed: completed === 'true' };
       });
     };
-    
+
     const questData = {
       playerName: todayRow[2] || '',
       str: {
@@ -294,7 +294,7 @@ function doGet(e) {
       },
       lastUpdate: todayRow[1] ? new Date(todayRow[1]).toISOString() : new Date().toISOString()
     };
-    
+
     const output = ContentService.createTextOutput(JSON.stringify({
       success: true,
       hasData: true,
@@ -304,7 +304,7 @@ function doGet(e) {
     }));
     output.setMimeType(ContentService.MimeType.JSON);
     return output;
-    
+
   } catch (error) {
     const output = ContentService.createTextOutput(JSON.stringify({
       success: false,

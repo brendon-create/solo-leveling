@@ -37,7 +37,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
       const now = new Date()
       const resetTime = new Date()
       resetTime.setHours(4, 0, 0, 0)
-      
+
       if (lastDate && new Date(lastDate) < resetTime && now >= resetTime) {
         return getInitialQuestData()
       }
@@ -57,7 +57,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
     const onboardingComplete = localStorage.getItem('solo-rpg-onboarding-complete')
     const hasAppScriptUrl = localStorage.getItem('solo-rpg-webapp-url')
     const reminderDismissed = localStorage.getItem('solo-rpg-appscript-reminder-dismissed')
-    
+
     // 如果完成新手教學但沒有設定URL，且未關閉提醒，顯示提醒
     if (onboardingComplete && !hasAppScriptUrl && !reminderDismissed) {
       setTimeout(() => setShowAppScriptReminder(true), 1000) // 延遲1秒顯示
@@ -68,9 +68,9 @@ export default function Dashboard({ sheetUrl, onReset }) {
   useEffect(() => {
     const lastFeedbackDay = parseInt(localStorage.getItem('solo-rpg-last-feedback-day') || '0')
     const nextFeedbackInterval = parseInt(localStorage.getItem('solo-rpg-next-feedback-interval') || '0')
-    
+
     let shouldShow = false
-    
+
     // 情況1：從未顯示過，且已到 Day 3
     if (lastFeedbackDay === 0 && totalDays >= 3) {
       shouldShow = true
@@ -79,7 +79,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
     else if (lastFeedbackDay > 0 && (totalDays - lastFeedbackDay) >= nextFeedbackInterval) {
       shouldShow = true
     }
-    
+
     if (shouldShow) {
       const timer = setTimeout(() => {
         setShowFeedbackModal(true)
@@ -89,7 +89,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
         const nextInterval = Math.floor(Math.random() * 4) + 7 // 7, 8, 9, 或 10 天
         localStorage.setItem('solo-rpg-next-feedback-interval', nextInterval.toString())
       }, 10000) // 10秒後彈出
-      
+
       return () => clearTimeout(timer)
     }
   }, [totalDays])
@@ -139,7 +139,7 @@ export default function Dashboard({ sheetUrl, onReset }) {
       // 如果本地無真實數據（lastUpdate 為 null），或雲端數據較新，使用雲端數據
       if (!questData.lastUpdate || cloudLastUpdate > localLastUpdate) {
         console.log('✅ 雲端數據較新，正在同步到本地...')
-        
+
         // 智能合併：取兩邊較新的數據
         const mergedQuestData = {
           ...cloudData.questData,
@@ -176,24 +176,24 @@ export default function Dashboard({ sheetUrl, onReset }) {
             }))
           }
         }
-        
+
         // 檢查玩家姓名衝突
         const localPlayerName = localStorage.getItem('solo-rpg-player-name')
         const cloudPlayerName = cloudData.questData.playerName
-        
+
         if (localPlayerName && cloudPlayerName && localPlayerName !== cloudPlayerName) {
           // 姓名衝突，讓用戶選擇
           setShowNameConflictModal(true)
           setConflictNames({ local: localPlayerName, cloud: cloudPlayerName })
         }
-        
+
         setQuestData(mergedQuestData)
         setTotalDays(cloudData.totalDays)
-        
+
         // 更新 localStorage
         localStorage.setItem('solo-rpg-quests', JSON.stringify(mergedQuestData))
         localStorage.setItem('solo-rpg-total-days', cloudData.totalDays.toString())
-        
+
         console.log('✅ 已從雲端同步最新數據（已保留本地實時記錄）')
       } else {
         if (showLog) console.log('ℹ️ 本地數據已是最新')
@@ -549,11 +549,10 @@ export default function Dashboard({ sheetUrl, onReset }) {
             <button
               onClick={() => syncFromCloud(true)}
               disabled={isSyncing}
-              className={`px-4 py-2 rounded-lg text-sm border transition-all duration-200 ${
-                isSyncing 
-                  ? 'bg-gray-700 text-gray-500 border-gray-600 cursor-not-allowed' 
+              className={`px-4 py-2 rounded-lg text-sm border transition-all duration-200 ${isSyncing
+                  ? 'bg-gray-700 text-gray-500 border-gray-600 cursor-not-allowed'
                   : 'bg-blue-800 hover:bg-blue-700 text-blue-300 border-blue-700 hover:border-blue-600'
-              }`}
+                }`}
               title="手動同步雲端數據"
             >
               {isSyncing ? '⏳ 同步中...' : '🔄 同步'}
@@ -575,28 +574,56 @@ export default function Dashboard({ sheetUrl, onReset }) {
                 <div className="text-5xl mb-4">⚠️</div>
                 <h3 className="text-2xl font-bold text-red-300 mb-2">系統警告</h3>
                 <p className="text-gray-300 mb-4">偵測到玩家自我認同衝突</p>
-                <p className="text-sm text-gray-400">系統在不同設備上發現不同的玩家姓名</p>
+                <p className="text-lg font-semibold text-white mb-2">請選擇你想使用的角色名稱</p>
               </div>
               <div className="space-y-3 mb-6">
                 <button
                   onClick={() => {
-                    setPlayerName(conflictNames.local)
-                    localStorage.setItem('solo-rpg-player-name', conflictNames.local)
+                    const selectedName = conflictNames.local
+                    setPlayerName(selectedName)
+                    localStorage.setItem('solo-rpg-player-name', selectedName)
+                    // 更新到 questData 並同步到雲端
+                    const newQuestData = {
+                      ...questData,
+                      playerName: selectedName,
+                      lastUpdate: new Date().toISOString()
+                    }
+                    setQuestData(newQuestData)
+                    localStorage.setItem('solo-rpg-quests', JSON.stringify(newQuestData))
+                    // 立即同步到雲端
+                    syncToSheet(sheetUrl, {
+                      date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                      ...newQuestData
+                    }).catch(err => console.error('同步失敗:', err))
                     setShowNameConflictModal(false)
                   }}
-                  className="w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all"
+                  className="w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all text-lg font-semibold"
                 >
-                  使用本地姓名: {conflictNames.local}
+                  {conflictNames.local}
                 </button>
                 <button
                   onClick={() => {
-                    setPlayerName(conflictNames.cloud)
-                    localStorage.setItem('solo-rpg-player-name', conflictNames.cloud)
+                    const selectedName = conflictNames.cloud
+                    setPlayerName(selectedName)
+                    localStorage.setItem('solo-rpg-player-name', selectedName)
+                    // 更新到 questData 並同步到雲端
+                    const newQuestData = {
+                      ...questData,
+                      playerName: selectedName,
+                      lastUpdate: new Date().toISOString()
+                    }
+                    setQuestData(newQuestData)
+                    localStorage.setItem('solo-rpg-quests', JSON.stringify(newQuestData))
+                    // 立即同步到雲端
+                    syncToSheet(sheetUrl, {
+                      date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                      ...newQuestData
+                    }).catch(err => console.error('同步失敗:', err))
                     setShowNameConflictModal(false)
                   }}
-                  className="w-full px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all"
+                  className="w-full px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all text-lg font-semibold"
                 >
-                  使用雲端姓名: {conflictNames.cloud}
+                  {conflictNames.cloud}
                 </button>
               </div>
             </div>
