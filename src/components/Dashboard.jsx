@@ -21,6 +21,13 @@ export default function Dashboard({ sheetUrl, onReset }) {
   })
   const [showAppScriptReminder, setShowAppScriptReminder] = useState(false)
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+  const [showPlayerNameModal, setShowPlayerNameModal] = useState(() => {
+    return !localStorage.getItem('solo-leveling-player-name')
+  })
+  const [playerName, setPlayerName] = useState(() => {
+    return localStorage.getItem('solo-leveling-player-name') || 'Brendon'
+  })
+  const [inputName, setInputName] = useState('')
 
   // 先定義所有狀態變量
   const [questData, setQuestData] = useState(() => {
@@ -135,12 +142,32 @@ export default function Dashboard({ sheetUrl, onReset }) {
       if (!questData.lastUpdate || cloudLastUpdate > localLastUpdate) {
         console.log('✅ 雲端數據較新，正在同步到本地...')
         
-        // 保留本地的實時數據（如 waterRecords）
+        // 保留本地的實時數據
         const mergedQuestData = {
           ...cloudData.questData,
           hp: {
             ...cloudData.questData.hp,
-            waterRecords: questData.hp?.waterRecords || [] // 保留本地的飲水記錄
+            waterRecords: questData.hp?.waterRecords || [],
+            water: questData.hp?.water || cloudData.questData.hp.water // 保留本地飲水量
+          },
+          // 確保 tasks 陣列正確同步（使用 id 匹配而非索引）
+          int: {
+            tasks: (cloudData.questData.int?.tasks || []).map((task, index) => ({
+              ...task,
+              id: task.id || `task-${index}`
+            }))
+          },
+          mp: {
+            tasks: (cloudData.questData.mp?.tasks || []).map((task, index) => ({
+              ...task,
+              id: task.id || `task-${index}`
+            }))
+          },
+          crt: {
+            tasks: (cloudData.questData.crt?.tasks || []).map((task, index) => ({
+              ...task,
+              id: task.id || `task-${index}`
+            }))
           }
         }
         
@@ -499,7 +526,8 @@ export default function Dashboard({ sheetUrl, onReset }) {
             <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
               ⚔️ Solo Leveling
             </h1>
-            <p className="text-gray-400 text-sm mt-1">
+            <p className="text-purple-300 text-lg font-semibold mt-1">{playerName} Edition</p>
+            <p className="text-gray-400 text-sm">
               Day {totalDays} ({format(new Date(), 'yyyy/MM/dd')}) / Day 100 ({getDay100Date()})
             </p>
           </div>
@@ -524,6 +552,46 @@ export default function Dashboard({ sheetUrl, onReset }) {
             </button>
           </div>
         </div>
+
+        {/* 玩家姓名初始化 */}
+        {showPlayerNameModal && (
+          <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[200] p-4 animate-fade-in">
+            <div className="bg-gradient-to-br from-purple-900 to-gray-900 border-4 border-purple-500 rounded-xl p-8 max-w-md w-full shadow-2xl animate-scale-in">
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-4 animate-pulse">⚡</div>
+                <p className="text-gray-400 text-sm mb-4">系統初始化...</p>
+                <h3 className="text-2xl font-bold text-purple-300">請輸入玩家姓名</h3>
+              </div>
+              <input
+                type="text"
+                value={inputName}
+                onChange={(e) => setInputName(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && inputName.trim()) {
+                    const name = inputName.trim()
+                    setPlayerName(name)
+                    localStorage.setItem('solo-leveling-player-name', name)
+                    setShowPlayerNameModal(false)
+                  }
+                }}
+                placeholder="輸入您的姓名"
+                className="w-full px-4 py-3 bg-gray-900 border-2 border-purple-500 rounded-lg text-gray-200 text-center text-xl focus:outline-none focus:border-purple-400 mb-4"
+                autoFocus
+              />
+              <button
+                onClick={() => {
+                  const name = inputName.trim() || 'Player'
+                  setPlayerName(name)
+                  localStorage.setItem('solo-leveling-player-name', name)
+                  setShowPlayerNameModal(false)
+                }}
+                className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-lg transition-all duration-200"
+              >
+                確認
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* 新手教學 */}
         {showOnboarding && (
