@@ -116,7 +116,7 @@ export default function STRQuests({ data = {}, onUpdate }) {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* 左側：每日任務 */}
         <div className="lg:col-span-1">
-          <div className="flex justify-between items-center mb-3">
+          <div className="flex items-center gap-2 mb-3">
             <h3 className="text-lg font-semibold text-red-300">每日任務</h3>
             <button
               onClick={() => {
@@ -125,7 +125,7 @@ export default function STRQuests({ data = {}, onUpdate }) {
               }}
               className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300 transition-colors"
             >
-              ⚙️ <span>設定</span>
+              ⚙️ <span>設定每日任務</span>
             </button>
           </div>
           <div className="space-y-3">
@@ -184,7 +184,7 @@ export default function STRQuests({ data = {}, onUpdate }) {
                     onChange={(e) => updateGoal('goal1', 'initial', e.target.value)}
                     onBlur={(e) => handleNumberBlur('goal1', 'initial', e.target.value)}
                     onFocus={(e) => e.target.select()}
-                    className="w-full px-2 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-200 focus:outline-none focus:border-red-500"
+                    className="w-full px-2 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-200 focus:outline-none focus:border-red-500 [color-scheme:dark]"
                   />
                 </div>
                 <div>
@@ -196,7 +196,7 @@ export default function STRQuests({ data = {}, onUpdate }) {
                     onChange={(e) => updateGoal('goal1', 'target', e.target.value)}
                     onBlur={(e) => handleNumberBlur('goal1', 'target', e.target.value)}
                     onFocus={(e) => e.target.select()}
-                    className="w-full px-2 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-200 focus:outline-none focus:border-red-500"
+                    className="w-full px-2 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-200 focus:outline-none focus:border-red-500 [color-scheme:dark]"
                   />
                 </div>
                 <div>
@@ -245,7 +245,7 @@ export default function STRQuests({ data = {}, onUpdate }) {
                     onChange={(e) => updateGoal('goal2', 'initial', e.target.value)}
                     onBlur={(e) => handleNumberBlur('goal2', 'initial', e.target.value)}
                     onFocus={(e) => e.target.select()}
-                    className="w-full px-2 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-200 focus:outline-none focus:border-red-500"
+                    className="w-full px-2 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-200 focus:outline-none focus:border-red-500 [color-scheme:dark]"
                   />
                 </div>
                 <div>
@@ -257,7 +257,7 @@ export default function STRQuests({ data = {}, onUpdate }) {
                     onChange={(e) => updateGoal('goal2', 'target', e.target.value)}
                     onBlur={(e) => handleNumberBlur('goal2', 'target', e.target.value)}
                     onFocus={(e) => e.target.select()}
-                    className="w-full px-2 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-200 focus:outline-none focus:border-red-500"
+                    className="w-full px-2 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-200 focus:outline-none focus:border-red-500 [color-scheme:dark]"
                   />
                 </div>
                 <div>
@@ -306,7 +306,7 @@ export default function STRQuests({ data = {}, onUpdate }) {
                     onChange={(e) => updateGoal('goal3', 'initial', e.target.value)}
                     onBlur={(e) => handleNumberBlur('goal3', 'initial', e.target.value)}
                     onFocus={(e) => e.target.select()}
-                    className="w-full px-2 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-200 focus:outline-none focus:border-red-500"
+                    className="w-full px-2 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-200 focus:outline-none focus:border-red-500 [color-scheme:dark]"
                   />
                 </div>
                 <div>
@@ -318,7 +318,7 @@ export default function STRQuests({ data = {}, onUpdate }) {
                     onChange={(e) => updateGoal('goal3', 'target', e.target.value)}
                     onBlur={(e) => handleNumberBlur('goal3', 'target', e.target.value)}
                     onFocus={(e) => e.target.select()}
-                    className="w-full px-2 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-200 focus:outline-none focus:border-red-500"
+                    className="w-full px-2 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-200 focus:outline-none focus:border-red-500 [color-scheme:dark]"
                   />
                 </div>
                 <div>
