@@ -152,6 +152,18 @@ export default function Dashboard({ sheetUrl, onReset }) {
         }
       }
 
+      // 🔧 修正：如果今天沒數據但有歷史數據（用於雷達圖）
+      if (!cloudData.questData) {
+        if (cloudData.historyData && cloudData.historyData.length > 0) {
+          console.log('📚 雲端無今日數據，但有歷史數據:', cloudData.historyData.length, '天')
+          setTotalDays(cloudData.totalDays)
+          setHistoryData(cloudData.historyData)
+          localStorage.setItem('solo-rpg-history', JSON.stringify(cloudData.historyData))
+          localStorage.setItem('solo-rpg-total-days', cloudData.totalDays.toString())
+        }
+        return
+      }
+
       // 比較本地和雲端的時間戳
       const localLastUpdate = questData.lastUpdate ? new Date(questData.lastUpdate).getTime() : 0
       const cloudLastUpdate = cloudData.lastUpdate ? new Date(cloudData.lastUpdate).getTime() : 0

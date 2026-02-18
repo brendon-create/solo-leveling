@@ -13,7 +13,7 @@ export const FRONTEND_VERSION = '1.1.0';
  * 最低相容的 Google Apps Script 版本
  * 當 API 回傳的版本號低於此值時，會顯示更新提示
  */
-export const REQUIRED_GAS_VERSION = '1.1.0';
+export const REQUIRED_GAS_VERSION = '1.2.0';
 
 /**
  * 應用程式基本資訊
