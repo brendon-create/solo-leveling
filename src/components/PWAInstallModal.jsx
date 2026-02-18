@@ -141,11 +141,6 @@ export default function PWAInstallModal({ isOpen, onClose }) {
                   <p><span className="text-purple-400 font-bold">方法三：</span>其他瀏覽器可嘗試 <span className="text-yellow-400 font-bold">Ctrl+Shift+I</span> (Windows) 或 <span className="text-yellow-400 font-bold">Cmd+Option+I</span> (Mac) 打開開發者工具</p>
                 </div>
                 
-                <div className="bg-yellow-900/30 border border-yellow-600 rounded p-3 mt-3">
-                  <p className="text-yellow-300 text-xs">
-
-                  </p>
-                </div>
               </div>
             )}
           </div>
