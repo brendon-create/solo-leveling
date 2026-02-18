@@ -106,14 +106,22 @@ export const fetchFromSheet = async () => {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     
-    const result = await response.json()
+    const text = await response.text()
+    console.log('📥 收到回應長度:', text.length, '字元')
+    
+    const result = JSON.parse(text)
     
     if (result.success && result.hasData) {
       console.log('✅ 成功從雲端讀取數據')
+      if (result.historyData) {
+        console.log('📚 包含歷史數據:', result.historyData.length, '天')
+      }
       return {
         questData: result.questData,
         totalDays: result.totalDays,
-        lastUpdate: result.lastUpdate
+        lastUpdate: result.lastUpdate,
+        historyData: result.historyData || null,
+        scriptVersion: result.scriptVersion || null
       }
     } else {
       console.log('ℹ️ 雲端尚無今日數據')

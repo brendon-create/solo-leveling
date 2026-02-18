@@ -320,8 +320,10 @@ function doGet(e) {
       lastUpdate: todayRow[1] ? new Date(todayRow[1]).toISOString() : new Date().toISOString()
     };
 
-    // 🔧 關鍵修復：返回所有歷史數據
+    // 🔧 關鍵修復：返回所有歷史數據（最多100天）
     const historyData = [];
+    const maxDays = Math.min(values.length - 1, 100); // 最多100天
+    
     for (let i = 1; i < values.length; i++) {
       const row = values[i];
       const rowDate = row[0];
@@ -374,17 +376,36 @@ function doGet(e) {
       }
     }
 
-    const output = ContentService.createTextOutput(JSON.stringify({
-      success: true,
-      hasData: true,
-      totalDays: totalDays,
-      questData: questData,
-      historyData: historyData, // 新增：返回所有歷史數據
-      lastUpdate: todayRow[1] ? new Date(todayRow[1]).toISOString() : null,
-      scriptVersion: SCRIPT_VERSION
-    }));
-    output.setMimeType(ContentService.MimeType.JSON);
-    return output;
+    try {
+      const responseData = {
+        success: true,
+        hasData: true,
+        totalDays: totalDays,
+        questData: questData,
+        historyData: historyData, // 新增：返回所有歷史數據
+        lastUpdate: todayRow[1] ? new Date(todayRow[1]).toISOString() : null,
+        scriptVersion: SCRIPT_VERSION
+      };
+      
+      const output = ContentService.createTextOutput(JSON.stringify(responseData));
+      output.setMimeType(ContentService.MimeType.JSON);
+      return output;
+    } catch (jsonError) {
+      // JSON 序列化失敗，返回不含 historyData 的版本
+      Logger.log('警告：JSON 序列化失敗，返回簡化版本: ' + jsonError.toString());
+      const output = ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        hasData: true,
+        totalDays: totalDays,
+        questData: questData,
+        historyData: null, // 發生錯誤時不返回歷史數據
+        lastUpdate: todayRow[1] ? new Date(todayRow[1]).toISOString() : null,
+        scriptVersion: SCRIPT_VERSION,
+        warning: 'historyData too large or invalid'
+      }));
+      output.setMimeType(ContentService.MimeType.JSON);
+      return output;
+    }
 
   } catch (error) {
     const output = ContentService.createTextOutput(JSON.stringify({
