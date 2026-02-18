@@ -226,23 +226,30 @@ export default function Dashboard({ sheetUrl, onReset }) {
         localStorage.setItem('solo-rpg-quests', JSON.stringify(mergedQuestData))
         localStorage.setItem('solo-rpg-total-days', cloudData.totalDays.toString())
 
-        // 🔧 關鍵修復：從雲端同步時，更新今天的 historyData
-        const today = new Date().toISOString().split('T')[0]
-        const todayProgress = calculateTodayProgressFromData(mergedQuestData)
-        const updatedHistory = [...historyData]
-        const todayIndex = updatedHistory.findIndex(h => h.date === today)
-        
-        if (todayIndex >= 0) {
-          updatedHistory[todayIndex] = { date: today, data: todayProgress, rsn: mergedQuestData.rsn }
+        // 🔧 關鍵修復：使用雲端的 historyData（如果有的話）
+        if (cloudData.historyData && cloudData.historyData.length > 0) {
+          console.log('📚 從雲端讀取歷史數據:', cloudData.historyData.length, '天')
+          setHistoryData(cloudData.historyData)
+          localStorage.setItem('solo-rpg-history', JSON.stringify(cloudData.historyData))
         } else {
-          updatedHistory.push({ date: today, data: todayProgress, rsn: mergedQuestData.rsn })
+          // 如果雲端沒有歷史數據，更新今天的本地記錄
+          const today = new Date().toISOString().split('T')[0]
+          const todayProgress = calculateTodayProgressFromData(mergedQuestData)
+          const updatedHistory = [...historyData]
+          const todayIndex = updatedHistory.findIndex(h => h.date === today)
+          
+          if (todayIndex >= 0) {
+            updatedHistory[todayIndex] = { date: today, data: todayProgress, rsn: mergedQuestData.rsn }
+          } else {
+            updatedHistory.push({ date: today, data: todayProgress, rsn: mergedQuestData.rsn })
+          }
+          
+          setHistoryData(updatedHistory)
+          localStorage.setItem('solo-rpg-history', JSON.stringify(updatedHistory))
         }
-        
-        setHistoryData(updatedHistory)
-        localStorage.setItem('solo-rpg-history', JSON.stringify(updatedHistory))
 
         console.log('✅ 已從雲端同步最新數據（waterRecords:', mergedQuestData.hp?.waterRecords?.length || 0, '筆）')
-        console.log('✅ 已更新 historyData (共', updatedHistory.length, '天)')
+        console.log('✅ 已同步 historyData (共', historyData.length, '天)')
       } else {
         if (showLog) console.log('ℹ️ 本地數據已是最新')
       }

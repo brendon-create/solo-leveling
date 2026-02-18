@@ -320,11 +320,52 @@ function doGet(e) {
       lastUpdate: todayRow[1] ? new Date(todayRow[1]).toISOString() : new Date().toISOString()
     };
 
+    // 🔧 關鍵修復：返回所有歷史數據
+    const historyData = [];
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      const rowDate = row[0];
+      if (rowDate) {
+        const rowDateString = Utilities.formatDate(new Date(rowDate), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+        
+        // 解析每天的進度
+        const strTasks = parseTasks(row[3]);
+        const intTasks = parseTasks(row[30]);
+        const mpTasks = parseTasks(row[31]);
+        const crtTasks = parseTasks(row[32]);
+        const sklEnabled = row[41] || false;
+        const sklCompleted = row[43] || false;
+        
+        // 計算當天的完成度
+        const dayProgress = [
+          { stat: 'STR', value: Math.round((strTasks.filter(t => t.completed).length / (strTasks.length || 1)) * 100), fullMark: 100 },
+          { stat: 'INT', value: Math.round((intTasks.filter(t => t.completed).length / (intTasks.length || 1)) * 100), fullMark: 100 },
+          { stat: 'MP', value: Math.round((mpTasks.filter(t => t.completed).length / (mpTasks.length || 1)) * 100), fullMark: 100 },
+          { stat: 'CRT', value: Math.round((crtTasks.filter(t => t.completed).length / (crtTasks.length || 1)) * 100), fullMark: 100 },
+          { stat: 'GOLD', value: 0, fullMark: 100 } // GOLD 計算較複雜，暫時設為0
+        ];
+        
+        if (sklEnabled) {
+          dayProgress.push({ stat: 'SKL', value: sklCompleted ? 100 : 0, fullMark: 100 });
+        }
+        
+        historyData.push({
+          date: rowDateString,
+          data: dayProgress,
+          rsn: {
+            celebrated: row[44] || false,
+            gratitude: row[45] || ''
+          }
+        });
+      }
+    }
+
     const output = ContentService.createTextOutput(JSON.stringify({
       success: true,
       hasData: true,
       totalDays: totalDays,
       questData: questData,
+      historyData: historyData, // 新增：返回所有歷史數據
       lastUpdate: todayRow[1] ? new Date(todayRow[1]).toISOString() : null,
       scriptVersion: SCRIPT_VERSION
     }));
