@@ -16,14 +16,17 @@ export default function RealTimeHPBar({ questData, onUpdate }) {
     }
   }, [])
 
-  // 每分鐘更新一次時間
+  // 每分鐘更新一次時間 + 當 waterRecords 變化時立即更新
   useEffect(() => {
+    // 立即更新一次時間（確保喝水後立即反映）
+    setCurrentTime(new Date())
+    
     const timer = setInterval(() => {
       setCurrentTime(new Date())
     }, 60000) // 60秒
 
     return () => clearInterval(timer)
-  }, [])
+  }, [questData?.waterRecords])
 
   // 計算飲水HP（50%部分）
   const calculateWaterHP = () => {

@@ -14,6 +14,7 @@ import OnboardingTutorial from './OnboardingTutorial'
 import ScriptUpdateModal from './ScriptUpdateModal'
 import { syncToSheet, fetchFromSheet } from '../services/googleSheets'
 import { migrateData, isScriptOutdated, REQUIRED_SCRIPT_VERSION } from '../utils/versionManager'
+import { smartDailyReset, shouldResetDaily } from '../utils/dailyReset'
 
 export default function Dashboard({ sheetUrl, onReset }) {
   const [showSettings, setShowSettings] = useState(false)
@@ -36,14 +37,10 @@ export default function Dashboard({ sheetUrl, onReset }) {
     const saved = localStorage.getItem('solo-rpg-quests')
     if (saved) {
       const data = JSON.parse(saved)
-      // 檢查是否需要重置（凌晨 4 點）
-      const lastDate = data.lastUpdate
-      const now = new Date()
-      const resetTime = new Date()
-      resetTime.setHours(4, 0, 0, 0)
-
-      if (lastDate && new Date(lastDate) < resetTime && now >= resetTime) {
-        return getInitialQuestData()
+      // 使用智能重置：只重置完成狀態，保留所有自訂設定
+      if (shouldResetDaily(data.lastUpdate)) {
+        console.log('🌅 凌晨4點已過，執行智能重置')
+        return smartDailyReset(data)
       }
       return data
     }
