@@ -60,7 +60,7 @@ export default function PWAInstallModal({ isOpen, onClose }) {
   if (!isOpen) return null;
   
   return (
-    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[200] p-4 animate-fade-in">
+    <div className="fixed inset-0 flex items-center justify-center z-[200] p-4 animate-fade-in">
       <div className="bg-gradient-to-br from-purple-900 to-gray-900 border-4 border-purple-500 rounded-xl p-8 max-w-lg w-full shadow-2xl animate-scale-in">
         {/* 標題 */}
         <div className="text-center mb-6">
@@ -143,7 +143,7 @@ export default function PWAInstallModal({ isOpen, onClose }) {
                 
                 <div className="bg-yellow-900/30 border border-yellow-600 rounded p-3 mt-3">
                   <p className="text-yellow-300 text-xs">
-                    💡 <strong>小提示：</strong>如果網址列顯示「Open in Web App」，表示已安裝完成，可以像 App 一樣使用！
+
                   </p>
                 </div>
               </div>
