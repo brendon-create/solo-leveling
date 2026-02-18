@@ -136,9 +136,15 @@ export default function PWAInstallModal({ isOpen, onClose }) {
               <div className="text-gray-300 text-sm space-y-3">
                 <p>電腦版使用方式：</p>
                 <div className="space-y-2 ml-2">
-                  <p><span className="text-purple-400 font-bold">1.</span> Chrome/Edge 瀏覽器會在網址列顯示<span className="text-yellow-400 font-bold">「安裝」</span>圖示</p>
-                  <p><span className="text-purple-400 font-bold">2.</span> 點擊即可安裝為獨立視窗</p>
-                  <p><span className="text-purple-400 font-bold">3.</span> 也可以從選單 <span className="text-yellow-400 font-bold">→ 安裝 Solo RPG</span></p>
+                  <p><span className="text-purple-400 font-bold">1.</span> 如果看到網址列旁邊有 <span className="text-yellow-400 font-bold">「安裝」</span> 圖示，點擊即可安裝</p>
+                  <p><span className="text-purple-400 font-bold">2.</span> 如果沒有安裝圖示，可以將瀏覽器<span className="text-yellow-400 font-bold">最大化</span>使用</p>
+                  <p><span className="text-purple-400 font-bold">3.</span> 已安裝的話，網址列會顯示 <span className="text-yellow-400 font-bold">「Open in Web App」</span></p>
+                </div>
+                
+                <div className="bg-yellow-900/30 border border-yellow-600 rounded p-3 mt-3">
+                  <p className="text-yellow-300 text-xs">
+                    💡 <strong>小提示：</strong>「Open in Web App」表示已安裝完成，可以像 App 一樣使用！
+                  </p>
                 </div>
               </div>
             )}

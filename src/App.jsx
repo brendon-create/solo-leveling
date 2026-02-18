@@ -29,10 +29,21 @@ function App() {
   
   // PWA 安裝提示狀態
   const [showPWAInstallModal, setShowPWAInstallModal] = useState(() => {
+    // 如果已經安裝為 PWA，就不顯示
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      return false
+    }
     // 檢查是否顯示過 PWA 安裝提示
     const hasSeenPWA = localStorage.getItem('solo-rpg-pwa-install-shown')
     return !hasSeenPWA
   })
+  
+  // 確保背景一直是深色（防止白畫面）
+  useEffect(() => {
+    document.documentElement.style.backgroundColor = '#111827'
+    document.body.style.backgroundColor = '#111827'
+    document.body.style.minHeight = '100vh'
+  }, [])
   
   // 處理 Splash 動畫完成
   const handleSplashComplete = () => {
