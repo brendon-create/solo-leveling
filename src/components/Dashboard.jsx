@@ -320,11 +320,13 @@ export default function Dashboard({ sheetUrl, onReset }) {
       if (needsInheritance) {
         if (showLog) console.log('🔄 任務為預設值，執行「從昨日繼承」邏輯...')
         
-        // 🔧 從 cloudData.questData 獲取昨日數據（已由 GAS 傳回）
-        const yesterdayQuestData = cloudData.questData
+        // 🔧 從 cloudData.yesterdayQuestData 獲取昨日數據（由 GAS 傳回）
+        const yesterdayQuestData = cloudData.yesterdayQuestData
         
         if (showLog && yesterdayQuestData) {
           console.log('📝 昨日 STR 任務:', yesterdayQuestData.str?.dailyTasks?.map(t => t.name))
+        } else {
+          console.warn('⚠️ 沒有昨日數據！')
         }
         
         // 從昨日雲端數據獲取任務名稱，但將完成狀態全部重置為 false

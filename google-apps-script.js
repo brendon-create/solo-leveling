@@ -1,9 +1,9 @@
 // 📊 Solo RPG by BCCT - Google Apps Script
 // 此腳本實現「每天一筆記錄」的更新邏輯，避免重複記錄
-// @version 1.1.2
+// @version 1.1.3
 // @lastUpdate 2026-02-19
 
-const SCRIPT_VERSION = "1.1.2";
+const SCRIPT_VERSION = "1.1.3";
 
 function getVersion() {
   return ContentService.createTextOutput(JSON.stringify({
@@ -418,7 +418,60 @@ function doGet(e) {
 
     // 🔧 關鍵修復：返回所有歷史數據（最多100天）
     const historyData = [];
-    const maxDays = Math.min(values.length - 1, 100); // 最多100天
+    
+    // 🔧 新增：即使有今日數據，也返回昨日數據（供前端繼承任務名稱）
+    let yesterdayQuestData = null;
+    if (values.length > 2) { // 至少有昨天和今天的數據
+      const yesterdayRow = values[values.length - 2]; // 倒數第二行是昨天
+      const yesterdayRowDate = yesterdayRow[0];
+      if (yesterdayRowDate) {
+        const yesterdayDateString = Utilities.formatDate(new Date(yesterdayRowDate), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayDateString2 = Utilities.formatDate(yesterday, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+        
+        if (yesterdayDateString === yesterdayDateString2) {
+          yesterdayQuestData = {
+            playerName: yesterdayRow[2] || '',
+            str: {
+              dailyTasks: parseTasks(yesterdayRow[3]),
+              goals: {
+                goal1: { name: yesterdayRow[4] || '', unit: yesterdayRow[5] || '', initial: yesterdayRow[6] || 0, target: yesterdayRow[7] || 0, current: yesterdayRow[8] || 0 },
+                goal2: { name: yesterdayRow[9] || '', unit: yesterdayRow[10] || '', initial: yesterdayRow[11] || 0, target: yesterdayRow[12] || 0, current: yesterdayRow[13] || 0 },
+                goal3: { name: yesterdayRow[14] || '', unit: yesterdayRow[15] || '', initial: yesterdayRow[16] || 0, target: yesterdayRow[17] || 0, current: yesterdayRow[18] || 0 }
+              }
+            },
+            hp: {
+              water: yesterdayRow[19] || 0,
+              waterRecords: yesterdayRow[20] ? JSON.parse(yesterdayRow[20]) : [],
+              waterTarget: yesterdayRow[21] || 2400,
+              wakeTime: yesterdayRow[22] || null,
+              sleepTime: yesterdayRow[23] || null,
+              wakeTimeGoals: { best: '05:00', great: '05:30', ok: '06:00', late: '06:00+' },
+              sleepTimeGoals: { best: '21:00', great: '21:30', ok: '22:00', late: '22:00+' },
+              meals: { breakfast: yesterdayRow[24] || false, lunch: yesterdayRow[26] || false, dinner: yesterdayRow[27] || false },
+              fasting: { breakfastFast: yesterdayRow[25] || false, dinnerFast: yesterdayRow[28] || false, fullDayFast: yesterdayRow[29] || false }
+            },
+            int: { tasks: parseTasks(yesterdayRow[30]) },
+            mp: { tasks: parseTasks(yesterdayRow[31]) },
+            crt: { tasks: parseTasks(yesterdayRow[32]) },
+            gold: {
+              income: yesterdayRow[33] || '',
+              incomeTarget: yesterdayRow[34] || 3000,
+              action1Done: yesterdayRow[35] || false,
+              action1Text: yesterdayRow[36] || '',
+              action2Done: yesterdayRow[37] || false,
+              action2Text: yesterdayRow[38] || '',
+              action3Done: yesterdayRow[39] || false,
+              action3Text: yesterdayRow[40] || ''
+            },
+            skl: { enabled: yesterdayRow[41] || false, taskName: yesterdayRow[42] || '', completed: yesterdayRow[43] || false },
+            rsn: { celebrated: yesterdayRow[44] || false, gratitude: yesterdayRow[45] || '' },
+            alcohol: { enabled: yesterdayRow[46] !== undefined ? yesterdayRow[46] : true, reason: yesterdayRow[47] || '', feeling: yesterdayRow[48] || '' }
+          };
+        }
+      }
+    }
     
     for (let i = 1; i < values.length; i++) {
       const row = values[i];
@@ -480,7 +533,8 @@ function doGet(e) {
         questData: questData,
         historyData: historyData, // 新增：返回所有歷史數據
         lastUpdate: todayRow[1] ? new Date(todayRow[1]).toISOString() : null,
-        scriptVersion: SCRIPT_VERSION
+        scriptVersion: SCRIPT_VERSION,
+        yesterdayQuestData: yesterdayQuestData  // 🔧 返回昨日數據，供前端繼承任務名稱
       };
       
       const output = ContentService.createTextOutput(JSON.stringify(responseData));
