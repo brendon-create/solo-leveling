@@ -151,9 +151,9 @@ export default function Dashboard({ sheetUrl, onReset }) {
         }
       }
 
-      // 🔧 處理 hasData: false 的情況：仍要同步 totalDays 和 historyData
+      // 🔧 處理 hasData: false 的情況：需要為今天建立新記錄
       if (!cloudData.hasData) {
-        if (showLog) console.log('ℹ️ 雲端無今日數據，但同步歷史記錄...')
+        if (showLog) console.log('ℹ️ 雲端無今日數據，執行「繼承昨日設定」邏輯...')
         
         // 同步 totalDays
         if (cloudData.totalDays && cloudData.totalDays > 0) {
@@ -164,17 +164,75 @@ export default function Dashboard({ sheetUrl, onReset }) {
           }
         }
         
-        // 同步 historyData（如果有的话）
+        // 同步 historyData
         if (cloudData.historyData && cloudData.historyData.length > 0) {
           setHistoryData(cloudData.historyData)
           localStorage.setItem('solo-rpg-history', JSON.stringify(cloudData.historyData))
           if (showLog) console.log('✅ 已同步 historyData (共', cloudData.historyData.length, '天)')
         }
         
-        // 沒有今日數據，不需要 further processing
+        // 🔧 關鍵修復：建立今日初始數據，保留用戶自定義設定
+        const todayInitialData = getInitialQuestData()
+        const localQuestData = JSON.parse(localStorage.getItem('solo-rpg-quests') || '{}')
+        
+        const mergedTodayData = {
+          ...todayInitialData,
+          str: {
+            dailyTasks: localQuestData.str?.dailyTasks || todayInitialData.str.dailyTasks,
+            goals: localQuestData.str?.goals || todayInitialData.str.goals
+          },
+          int: { tasks: localQuestData.int?.tasks || todayInitialData.int.tasks },
+          mp: { tasks: localQuestData.mp?.tasks || todayInitialData.mp.tasks },
+          crt: { tasks: localQuestData.crt?.tasks || todayInitialData.crt.tasks },
+          gold: {
+            income: '',
+            incomeTarget: localQuestData.gold?.incomeTarget || todayInitialData.gold.incomeTarget,
+            action1Done: false,
+            action1Text: localQuestData.gold?.action1Text || '',
+            action2Done: false,
+            action2Text: localQuestData.gold?.action2Text || '',
+            action3Done: false,
+            action3Text: localQuestData.gold?.action3Text || ''
+          },
+          skl: {
+            enabled: localQuestData.skl?.enabled !== undefined ? localQuestData.skl.enabled : true,
+            taskName: localQuestData.skl?.taskName || todayInitialData.skl.taskName,
+            completed: false
+          },
+          hp: {
+            water: 0,
+            waterRecords: [],
+            waterTarget: localQuestData.hp?.waterTarget || todayInitialData.hp.waterTarget,
+            wakeTime: null,
+            sleepTime: null,
+            wakeTimeGoals: localQuestData.hp?.wakeTimeGoals || todayInitialData.hp.wakeTimeGoals,
+            sleepTimeGoals: localQuestData.hp?.sleepTimeGoals || todayInitialData.hp.sleepTimeGoals,
+            meals: { breakfast: false, lunch: false, dinner: false },
+            fasting: { breakfastFast: false, dinnerFast: false, fullDayFast: false }
+          },
+          rsn: { celebrated: false, gratitude: '' },
+          alcohol: {
+            enabled: localQuestData.alcohol?.enabled !== undefined ? localQuestData.alcohol.enabled : true,
+            reason: '',
+            feeling: ''
+          }
+        }
+        
+        if (showLog) console.log('✅ 已建立今日初始數據（任務項目數:', mergedTodayData.str.dailyTasks.length, ', STR目標:', mergedTodayData.str.goals?.goal1?.name, ')')
+        
+        setQuestData(mergedTodayData)
+        localStorage.setItem('solo-rpg-quests', JSON.stringify(mergedTodayData))
+        
+        // 立即同步到雲端，建立今日記錄
+        if (showLog) console.log('🔄 立即同步到雲端，建立今日記錄...')
+        syncToSheet(sheetUrl, {
+          date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+          ...mergedTodayData
+        }).catch(err => console.error('同步失敗:', err))
+        
         return
       }
-
+      
       // 比較本地和雲端的時間戳
       const localLastUpdate = questData.lastUpdate ? new Date(questData.lastUpdate).getTime() : 0
       const cloudLastUpdate = cloudData.lastUpdate ? new Date(cloudData.lastUpdate).getTime() : 0
