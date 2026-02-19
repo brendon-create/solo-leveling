@@ -1,9 +1,9 @@
 // 📊 Solo RPG by BCCT - Google Apps Script
 // 此腳本實現「每天一筆記錄」的更新邏輯，避免重複記錄
-// @version 1.1.1
+// @version 1.1.2
 // @lastUpdate 2026-02-19
 
-const SCRIPT_VERSION = "1.1.1";
+const SCRIPT_VERSION = "1.1.2";
 
 function getVersion() {
   return ContentService.createTextOutput(JSON.stringify({
