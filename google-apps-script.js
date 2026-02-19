@@ -226,6 +226,51 @@ function doGet(e) {
 
     // 如果沒有今天的記錄，返回總天數（包含 scriptVersion 以便前端檢查版本）
     if (!todayRow) {
+      // 🔧 關鍵修復：獲取昨天的完整數據（用於「繼承昨日設定」）
+      let yesterdayQuestData = null;
+      if (values.length > 1) {
+        // 取最後一筆記錄當作昨天的數據
+        const lastRow = values[values.length - 1];
+        yesterdayQuestData = {
+          playerName: lastRow[2] || '',
+          str: {
+            dailyTasks: parseTasks(lastRow[3]),
+            goals: {
+              goal1: { name: lastRow[4] || '', unit: lastRow[5] || '', initial: lastRow[6] || 0, target: lastRow[7] || 0, current: lastRow[8] || 0 },
+              goal2: { name: lastRow[9] || '', unit: lastRow[10] || '', initial: lastRow[11] || 0, target: lastRow[12] || 0, current: lastRow[13] || 0 },
+              goal3: { name: lastRow[14] || '', unit: lastRow[15] || '', initial: lastRow[16] || 0, target: lastRow[17] || 0, current: lastRow[18] || 0 }
+            }
+          },
+          hp: {
+            water: lastRow[19] || 0,
+            waterRecords: lastRow[20] ? JSON.parse(lastRow[20]) : [],
+            waterTarget: lastRow[21] || 2400,
+            wakeTime: lastRow[22] || null,
+            sleepTime: lastRow[23] || null,
+            wakeTimeGoals: { best: '05:00', great: '05:30', ok: '06:00', late: '06:00+' },
+            sleepTimeGoals: { best: '21:00', great: '21:30', ok: '22:00', late: '22:00+' },
+            meals: { breakfast: lastRow[24] || false, lunch: lastRow[26] || false, dinner: lastRow[27] || false },
+            fasting: { breakfastFast: lastRow[25] || false, dinnerFast: lastRow[28] || false, fullDayFast: lastRow[29] || false }
+          },
+          int: { tasks: parseTasks(lastRow[30]) },
+          mp: { tasks: parseTasks(lastRow[31]) },
+          crt: { tasks: parseTasks(lastRow[32]) },
+          gold: {
+            income: lastRow[33] || '',
+            incomeTarget: lastRow[34] || 3000,
+            action1Done: lastRow[35] || false,
+            action1Text: lastRow[36] || '',
+            action2Done: lastRow[37] || false,
+            action2Text: lastRow[38] || '',
+            action3Done: lastRow[39] || false,
+            action3Text: lastRow[40] || ''
+          },
+          skl: { enabled: lastRow[41] || false, taskName: lastRow[42] || '', completed: lastRow[43] || false },
+          rsn: { celebrated: lastRow[44] || false, gratitude: lastRow[45] || '' },
+          alcohol: { enabled: lastRow[46] !== undefined ? lastRow[46] : true, reason: lastRow[47] || '', feeling: lastRow[48] || '' }
+        };
+      }
+      
       // 計算歷史數據（用於累積進度）
       const historyData = [];
       
@@ -280,6 +325,7 @@ function doGet(e) {
         hasData: false,
         totalDays: totalDays,
         historyData: historyData,
+        questData: yesterdayQuestData, // 🔧 返回昨日完整數據，供前端「繼承昨日設定」使用
         scriptVersion: SCRIPT_VERSION,
         message: 'No data for today'
       }));

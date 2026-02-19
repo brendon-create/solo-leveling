@@ -171,48 +171,91 @@ export default function Dashboard({ sheetUrl, onReset }) {
           if (showLog) console.log('✅ 已同步 historyData (共', cloudData.historyData.length, '天)')
         }
         
-        // 🔧 關鍵修復：建立今日初始數據，保留用戶自定義設定
+        // 🔧 從雲端返回的昨日完整數據取得任務設定（新設備的 localStorage 是空的）
         const todayInitialData = getInitialQuestData()
-        const localQuestData = JSON.parse(localStorage.getItem('solo-rpg-quests') || '{}')
+        
+        // cloudData.questData 現在包含昨日的完整任務設定（GAS 新增的功能）
+        const yesterdayQuestData = cloudData.questData
+        
+        if (showLog && yesterdayQuestData) {
+          console.log('📝 昨日任務設定來源:', yesterdayQuestData.str?.dailyTasks)
+        }
         
         const mergedTodayData = {
           ...todayInitialData,
-          str: {
-            dailyTasks: localQuestData.str?.dailyTasks || todayInitialData.str.dailyTasks,
-            goals: localQuestData.str?.goals || todayInitialData.str.goals
+          // STR 任務：使用昨日雲端設定
+          str: yesterdayQuestData?.str ? {
+            dailyTasks: yesterdayQuestData.str.dailyTasks || todayInitialData.str.dailyTasks,
+            goals: yesterdayQuestData.str.goals || todayInitialData.str.goals
+          } : {
+            dailyTasks: todayInitialData.str.dailyTasks,
+            goals: todayInitialData.str.goals
           },
-          int: { tasks: localQuestData.int?.tasks || todayInitialData.int.tasks },
-          mp: { tasks: localQuestData.mp?.tasks || todayInitialData.mp.tasks },
-          crt: { tasks: localQuestData.crt?.tasks || todayInitialData.crt.tasks },
-          gold: {
+          int: yesterdayQuestData?.int ? {
+            tasks: yesterdayQuestData.int.tasks || todayInitialData.int.tasks
+          } : { tasks: todayInitialData.int.tasks },
+          mp: yesterdayQuestData?.mp ? {
+            tasks: yesterdayQuestData.mp.tasks || todayInitialData.mp.tasks
+          } : { tasks: todayInitialData.mp.tasks },
+          crt: yesterdayQuestData?.crt ? {
+            tasks: yesterdayQuestData.crt.tasks || todayInitialData.crt.tasks
+          } : { tasks: todayInitialData.crt.tasks },
+          gold: yesterdayQuestData?.gold ? {
             income: '',
-            incomeTarget: localQuestData.gold?.incomeTarget || todayInitialData.gold.incomeTarget,
+            incomeTarget: yesterdayQuestData.gold?.incomeTarget || todayInitialData.gold.incomeTarget,
             action1Done: false,
-            action1Text: localQuestData.gold?.action1Text || '',
+            action1Text: yesterdayQuestData.gold?.action1Text || '',
             action2Done: false,
-            action2Text: localQuestData.gold?.action2Text || '',
+            action2Text: yesterdayQuestData.gold?.action2Text || '',
             action3Done: false,
-            action3Text: localQuestData.gold?.action3Text || ''
+            action3Text: yesterdayQuestData.gold?.action3Text || ''
+          } : {
+            income: '',
+            incomeTarget: todayInitialData.gold.incomeTarget,
+            action1Done: false,
+            action1Text: '',
+            action2Done: false,
+            action2Text: '',
+            action3Done: false,
+            action3Text: ''
           },
-          skl: {
-            enabled: localQuestData.skl?.enabled !== undefined ? localQuestData.skl.enabled : true,
-            taskName: localQuestData.skl?.taskName || todayInitialData.skl.taskName,
+          skl: yesterdayQuestData?.skl ? {
+            enabled: yesterdayQuestData.skl?.enabled !== undefined ? yesterdayQuestData.skl.enabled : true,
+            taskName: yesterdayQuestData.skl?.taskName || todayInitialData.skl.taskName,
+            completed: false
+          } : {
+            enabled: true,
+            taskName: todayInitialData.skl.taskName,
             completed: false
           },
-          hp: {
+          hp: yesterdayQuestData?.hp ? {
             water: 0,
             waterRecords: [],
-            waterTarget: localQuestData.hp?.waterTarget || todayInitialData.hp.waterTarget,
+            waterTarget: yesterdayQuestData.hp?.waterTarget || todayInitialData.hp.waterTarget,
             wakeTime: null,
             sleepTime: null,
-            wakeTimeGoals: localQuestData.hp?.wakeTimeGoals || todayInitialData.hp.wakeTimeGoals,
-            sleepTimeGoals: localQuestData.hp?.sleepTimeGoals || todayInitialData.hp.sleepTimeGoals,
+            wakeTimeGoals: yesterdayQuestData.hp?.wakeTimeGoals || todayInitialData.hp.wakeTimeGoals,
+            sleepTimeGoals: yesterdayQuestData.hp?.sleepTimeGoals || todayInitialData.hp.sleepTimeGoals,
+            meals: { breakfast: false, lunch: false, dinner: false },
+            fasting: { breakfastFast: false, dinnerFast: false, fullDayFast: false }
+          } : {
+            water: 0,
+            waterRecords: [],
+            waterTarget: todayInitialData.hp.waterTarget,
+            wakeTime: null,
+            sleepTime: null,
+            wakeTimeGoals: todayInitialData.hp.wakeTimeGoals,
+            sleepTimeGoals: todayInitialData.hp.sleepTimeGoals,
             meals: { breakfast: false, lunch: false, dinner: false },
             fasting: { breakfastFast: false, dinnerFast: false, fullDayFast: false }
           },
           rsn: { celebrated: false, gratitude: '' },
-          alcohol: {
-            enabled: localQuestData.alcohol?.enabled !== undefined ? localQuestData.alcohol.enabled : true,
+          alcohol: yesterdayQuestData?.alcohol ? {
+            enabled: yesterdayQuestData.alcohol?.enabled !== undefined ? yesterdayQuestData.alcohol.enabled : true,
+            reason: '',
+            feeling: ''
+          } : {
+            enabled: true,
             reason: '',
             feeling: ''
           }
