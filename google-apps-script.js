@@ -1,9 +1,9 @@
 // 📊 Solo RPG by BCCT - Google Apps Script
 // 此腳本實現「每天一筆記錄」的更新邏輯，避免重複記錄
-// @version 1.1.0
-// @lastUpdate 2026-02-17
+// @version 1.1.1
+// @lastUpdate 2026-02-19
 
-const SCRIPT_VERSION = "1.1.0";
+const SCRIPT_VERSION = "1.1.1";
 
 function getVersion() {
   return ContentService.createTextOutput(JSON.stringify({
@@ -181,6 +181,16 @@ function doGet(e) {
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
 
+    // 解析 tasks 的輔助函數
+    const parseTasks = (taskString) => {
+      if (!taskString) return [];
+      return taskString.split(';').map((item, index) => {
+        const [name, completed] = item.split(':');
+        const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_') || `task_${index}`;
+        return { id, name, completed: completed === 'true' };
+      });
+    };
+
     // 如果 sheet 是空的，返回空數據
     if (sheet.getLastRow() === 0) {
       const output = ContentService.createTextOutput(JSON.stringify({
@@ -214,28 +224,68 @@ function doGet(e) {
       }
     }
 
-    // 如果沒有今天的記錄，返回總天數和空數據
+    // 如果沒有今天的記錄，返回總天數（包含 scriptVersion 以便前端檢查版本）
     if (!todayRow) {
+      // 計算歷史數據（用於累積進度）
+      const historyData = [];
+      
+      for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        const rowDate = row[0];
+        if (rowDate) {
+          const rowDateString = Utilities.formatDate(new Date(rowDate), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+          
+          const strTasks = parseTasks(row[3]);
+          const intTasks = parseTasks(row[30]);
+          const mpTasks = parseTasks(row[31]);
+          const crtTasks = parseTasks(row[32]);
+          const sklEnabled = row[41] || false;
+          const sklCompleted = row[43] || false;
+          
+          const income = parseFloat(row[33]) || 0;
+          const incomeTarget = row[34] || 3000;
+          const actions = [row[35], row[37], row[39]].filter(Boolean).length;
+          const actionScore = actions * 16.67;
+          let incomeScore = 0;
+          if (income <= incomeTarget) {
+            incomeScore = (income / incomeTarget) * 50;
+          } else {
+            const excess = income - incomeTarget;
+            incomeScore = 50 + Math.min((excess / 1000) * 5, 25);
+          }
+          const goldValue = Math.min(actionScore + incomeScore, 100);
+          
+          const dayProgress = [
+            { stat: 'STR', value: Math.round((strTasks.filter(t => t.completed).length / (strTasks.length || 1)) * 100), fullMark: 100 },
+            { stat: 'INT', value: Math.round((intTasks.filter(t => t.completed).length / (intTasks.length || 1)) * 100), fullMark: 100 },
+            { stat: 'MP', value: Math.round((mpTasks.filter(t => t.completed).length / (mpTasks.length || 1)) * 100), fullMark: 100 },
+            { stat: 'CRT', value: Math.round((crtTasks.filter(t => t.completed).length / (crtTasks.length || 1)) * 100), fullMark: 100 },
+            { stat: 'GOLD', value: Math.round(goldValue), fullMark: 100 }
+          ];
+          
+          if (sklEnabled) {
+            dayProgress.push({ stat: 'SKL', value: sklCompleted ? 100 : 0, fullMark: 100 });
+          }
+          
+          historyData.push({
+            date: rowDateString,
+            data: dayProgress,
+            rsn: { celebrated: row[44] || false, gratitude: row[45] || '' }
+          });
+        }
+      }
+      
       const output = ContentService.createTextOutput(JSON.stringify({
         success: true,
         hasData: false,
         totalDays: totalDays,
+        historyData: historyData,
+        scriptVersion: SCRIPT_VERSION,
         message: 'No data for today'
       }));
       output.setMimeType(ContentService.MimeType.JSON);
       return output;
     }
-
-    // 解析今天的數據（按照 sheet 的欄位順序）
-    const parseTasks = (taskString) => {
-      if (!taskString) return [];
-      return taskString.split(';').map((item, index) => {
-        const [name, completed] = item.split(':');
-        // 基於名稱生成穩定的 id（用名稱的 hash）
-        const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_') || `task_${index}`;
-        return { id, name, completed: completed === 'true' };
-      });
-    };
 
     const questData = {
       playerName: todayRow[2] || '',
