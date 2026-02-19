@@ -1,19 +1,25 @@
 // 📊 Solo RPG by BCCT - Google Apps Script
 // 此腳本實現「每天一筆記錄」的更新邏輯，避免重複記錄
-// 每天凌晨4點自動生成今日記錄（繼承昨日設定，待填狀態歸零）
-// @version 1.2.0
+// 每天第一次打開程式時，自動生成今日記錄（繼承昨日設定，待填狀態歸零）
+// @version 1.2.1
 // @lastUpdate 2026-02-19
 
-const SCRIPT_VERSION = "1.2.0";
+const SCRIPT_VERSION = "1.2.1";
 
-// 🔧 每日凌晨4點自動執行的函數（由 Apps Script 觸發器調用）
-function createDailyRecord() {
+// 🔧 前端呼叫：自動生成今日記錄（當沒有今日記錄時）
+// 由前端在每天凌晨4點後第一次開啟時呼叫
+function autoCreateDailyRecord() {
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     
     // 確保表頭存在
     if (sheet.getLastRow() === 0) {
       initializeSheet(sheet);
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        action: 'initialized',
+        message: 'Sheet initialized, please try again'
+      })).setMimeType(ContentService.MimeType.JSON);
     }
 
     // 獲取今天的日期
@@ -29,24 +35,34 @@ function createDailyRecord() {
       if (rowDate) {
         const rowDateString = Utilities.formatDate(new Date(rowDate), Session.getScriptTimeZone(), 'yyyy-MM-dd');
         if (rowDateString === todayDateString) {
-          Logger.log('📝 今日記錄已存在，跳過自動生成');
-          return;
+          // 今日記錄已存在，不需要生成
+          return ContentService.createTextOutput(JSON.stringify({
+            success: true,
+            action: 'already_exists',
+            message: 'Today\'s record already exists'
+          })).setMimeType(ContentService.MimeType.JSON);
         }
       }
     }
 
-    // 獲取昨天的數據（倒數第一行）
+    // 獲取昨天的數據（倒數第一行 = 最後一筆記錄）
     if (values.length < 2) {
-      Logger.log('⚠️ 沒有昨日數據，無法生成今日記錄');
-      return;
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        action: 'no_yesterday',
+        message: 'No yesterday data to inherit'
+      })).setMimeType(ContentService.MimeType.JSON);
     }
     
     const yesterdayRow = values[values.length - 1];
     const yesterdayDate = yesterdayRow[0];
     
     if (!yesterdayDate) {
-      Logger.log('⚠️ 昨日數據無效，無法生成今日記錄');
-      return;
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        action: 'invalid_yesterday',
+        message: 'Yesterday data is invalid'
+      })).setMimeType(ContentService.MimeType.JSON);
     }
 
     // 解析昨日任務（完成狀態設為 false）
@@ -91,29 +107,18 @@ function createDailyRecord() {
     
     Logger.log('✅ 已自動生成今日記錄（繼承昨日設定，待填狀態歸零）');
     
-  } catch (error) {
-    Logger.log('❌ 自動生成今日記錄失敗: ' + error.toString());
-  }
-}
-
-// 🔧 設定每日凌晨4點的觸發器（只需執行一次）
-function setupDailyTrigger() {
-  // 刪除現有的觸發器
-  const triggers = ScriptApp.getProjectTriggers();
-  for (let trigger of triggers) {
-    if (trigger.getHandlerFunction() === 'createDailyRecord') {
-      ScriptApp.deleteTrigger(trigger);
-    }
-  }
-  
-  // 創建新的觸發器（每天凌晨4點執行）
-  ScriptApp.newTrigger('createDailyRecord')
-    .timeBased()
-    .atHour(4)
-    .everyDays(1)
-    .create();
+    return ContentService.createTextOutput(JSON.stringify({
+      success: true,
+      action: 'created',
+      message: 'Today\'s record created from yesterday'
+    })).setMimeType(ContentService.MimeType.JSON);
     
-  Logger.log('✅ 已設定每日凌晨4點自動執行 createDailyRecord');
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
 
@@ -289,7 +294,14 @@ function initializeSheet(sheet) {
   sheet.setFrozenRows(1);
 }
 
+// 🔧 處理前端呼叫的自動生成請求
 function doGet(e) {
+  // 檢查是否有 action 參數
+  const action = e.parameter.action;
+  if (action === 'autoCreateDailyRecord') {
+    return autoCreateDailyRecord();
+  }
+
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
 
