@@ -178,7 +178,10 @@ export default function Dashboard({ sheetUrl, onReset }) {
         const yesterdayQuestData = cloudData.questData
         
         if (showLog && yesterdayQuestData) {
-          console.log('📝 昨日任務設定來源:', yesterdayQuestData.str?.dailyTasks)
+          console.log('📝 昨日 STR 任務:', yesterdayQuestData.str?.dailyTasks)
+          console.log('📝 昨日 INT 任務:', yesterdayQuestData.int?.tasks)
+          console.log('📝 昨日 MP 任務:', yesterdayQuestData.mp?.tasks)
+          console.log('📝 昨日 CRT 任務:', yesterdayQuestData.crt?.tasks)
         }
         
         // 🔧 關鍵修復：從昨日雲端數據獲取任務名稱，但將完成狀態全部重置為 false
