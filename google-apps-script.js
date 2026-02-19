@@ -1,9 +1,121 @@
 // 📊 Solo RPG by BCCT - Google Apps Script
 // 此腳本實現「每天一筆記錄」的更新邏輯，避免重複記錄
-// @version 1.1.3
+// 每天凌晨4點自動生成今日記錄（繼承昨日設定，待填狀態歸零）
+// @version 1.2.0
 // @lastUpdate 2026-02-19
 
-const SCRIPT_VERSION = "1.1.3";
+const SCRIPT_VERSION = "1.2.0";
+
+// 🔧 每日凌晨4點自動執行的函數（由 Apps Script 觸發器調用）
+function createDailyRecord() {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    
+    // 確保表頭存在
+    if (sheet.getLastRow() === 0) {
+      initializeSheet(sheet);
+    }
+
+    // 獲取今天的日期
+    const today = new Date();
+    const todayDateString = Utilities.formatDate(today, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+
+    // 檢查是否已有今天的記錄
+    const dataRange = sheet.getDataRange();
+    const values = dataRange.getValues();
+    
+    for (let i = 1; i < values.length; i++) {
+      const rowDate = values[i][0];
+      if (rowDate) {
+        const rowDateString = Utilities.formatDate(new Date(rowDate), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+        if (rowDateString === todayDateString) {
+          Logger.log('📝 今日記錄已存在，跳過自動生成');
+          return;
+        }
+      }
+    }
+
+    // 獲取昨天的數據（倒數第一行）
+    if (values.length < 2) {
+      Logger.log('⚠️ 沒有昨日數據，無法生成今日記錄');
+      return;
+    }
+    
+    const yesterdayRow = values[values.length - 1];
+    const yesterdayDate = yesterdayRow[0];
+    
+    if (!yesterdayDate) {
+      Logger.log('⚠️ 昨日數據無效，無法生成今日記錄');
+      return;
+    }
+
+    // 解析昨日任務（完成狀態設為 false）
+    const parseTasksReset = (taskString) => {
+      if (!taskString) return '';
+      return taskString.split(';').map(item => {
+        const [name] = item.split(':');
+        return `${name}:false`; // 全部重置為未完成
+      }).join(';');
+    };
+
+    // 構建今日記錄（繼承昨日設定，待填狀態歸零）
+    const todayRow = [
+      todayDateString,
+      new Date(), // 最後更新時間
+      yesterdayRow[2] || '', // 玩家名稱
+      parseTasksReset(yesterdayRow[3]), // STR 任務（重置完成狀態）
+      yesterdayRow[4] || '', yesterdayRow[5] || '', yesterdayRow[6] || 0, yesterdayRow[7] || 0, 0, // STR 目標1（current歸零）
+      yesterdayRow[9] || '', yesterdayRow[10] || '', yesterdayRow[11] || 0, yesterdayRow[12] || 0, 0, // STR 目標2（current歸零）
+      yesterdayRow[14] || '', yesterdayRow[15] || '', yesterdayRow[16] || 0, yesterdayRow[17] || 0, 0, // STR 目標3（current歸零）
+      0, // HP 飲水歸零
+      '[]', // 飲水記錄清空
+      yesterdayRow[21] || 2400, // 飲水目標（保留）
+      '', // 起床時間清空
+      '', // 就寢時間清空
+      false, false, false, false, false, false, // 餐食和禁食全部 false
+      parseTasksReset(yesterdayRow[30]), // INT 任務（重置完成狀態）
+      parseTasksReset(yesterdayRow[31]), // MP 任務（重置完成狀態）
+      parseTasksReset(yesterdayRow[32]), // CRT 任務（重置完成狀態）
+      '', // GOLD 收入清空
+      yesterdayRow[34] || 3000, // 收入目標（保留）
+      false, yesterdayRow[36] || '', // GOLD 行動1（重置完成，保留內容）
+      false, yesterdayRow[38] || '', // GOLD 行動2（重置完成，保留內容）
+      false, yesterdayRow[40] || '', // GOLD 行動3（重置完成，保留內容）
+      yesterdayRow[41] || false, yesterdayRow[42] || '', false, // SKL（保留 enabled 和 taskName，重置 completed）
+      false, '', // RSN（重置）
+      yesterdayRow[46] !== undefined ? yesterdayRow[46] : true, yesterdayRow[47] || '', '' // 酒精（保留 enabled，內容清空）
+    ];
+
+    // 寫入今日記錄
+    sheet.appendRow(todayRow);
+    
+    Logger.log('✅ 已自動生成今日記錄（繼承昨日設定，待填狀態歸零）');
+    
+  } catch (error) {
+    Logger.log('❌ 自動生成今日記錄失敗: ' + error.toString());
+  }
+}
+
+// 🔧 設定每日凌晨4點的觸發器（只需執行一次）
+function setupDailyTrigger() {
+  // 刪除現有的觸發器
+  const triggers = ScriptApp.getProjectTriggers();
+  for (let trigger of triggers) {
+    if (trigger.getHandlerFunction() === 'createDailyRecord') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  }
+  
+  // 創建新的觸發器（每天凌晨4點執行）
+  ScriptApp.newTrigger('createDailyRecord')
+    .timeBased()
+    .atHour(4)
+    .everyDays(1)
+    .create();
+    
+  Logger.log('✅ 已設定每日凌晨4點自動執行 createDailyRecord');
+}
+
 
 function getVersion() {
   return ContentService.createTextOutput(JSON.stringify({
