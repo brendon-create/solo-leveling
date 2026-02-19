@@ -111,20 +111,26 @@ export const fetchFromSheet = async () => {
     
     const result = JSON.parse(text)
     
-    if (result.success && result.hasData) {
-      console.log('✅ 成功從雲端讀取數據')
-      if (result.historyData) {
+    // 即使 hasData: false，也尝试获取 totalDays 和 historyData
+    if (result.success) {
+      console.log('✅ 成功從雲端讀取數據', result.hasData ? '(有今日數據)' : '(僅歷史數據)')
+      
+      // 如果有历史数据，返回它
+      if (result.historyData && result.historyData.length > 0) {
         console.log('📚 包含歷史數據:', result.historyData.length, '天')
       }
+      
+      // 即使没有今日数据，也返回 totalDays 和其他信息
       return {
-        questData: result.questData,
-        totalDays: result.totalDays,
-        lastUpdate: result.lastUpdate,
+        questData: result.questData || null,
+        totalDays: result.totalDays || 1,
+        lastUpdate: result.lastUpdate || null,
         historyData: result.historyData || null,
-        scriptVersion: result.scriptVersion || null
+        scriptVersion: result.scriptVersion || null,
+        hasData: result.hasData || false  // 标记是否有今日数据
       }
     } else {
-      console.log('ℹ️ 雲端尚無今日數據')
+      console.log('ℹ️ 雲端讀取失敗')
       return null
     }
   } catch (error) {
