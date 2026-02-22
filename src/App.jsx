@@ -4,17 +4,41 @@ import Dashboard from './components/Dashboard'
 import { initializeSheet, syncToSheet } from './services/googleSheets'
 
 function App() {
+  // 安全地讀取 localStorage，加入錯誤處理
+  const getPlayerName = () => {
+    try {
+      return localStorage.getItem('solo-rpg-player-name') || null
+    } catch (e) {
+      console.error('讀取 player-name 失敗:', e)
+      return null
+    }
+  }
+  
+  const getSheetUrl = () => {
+    try {
+      return localStorage.getItem('solo-rpg-sheet-url') || ''
+    } catch (e) {
+      console.error('讀取 sheet-url 失敗:', e)
+      return ''
+    }
+  }
+  
+  const getIsSetup = () => {
+    try {
+      return !!localStorage.getItem('solo-rpg-sheet-url')
+    } catch (e) {
+      console.error('讀取 isSetup 失敗:', e)
+      return false
+    }
+  }
+  
   const [showPlayerNameModal, setShowPlayerNameModal] = useState(() => {
-    return !localStorage.getItem('solo-rpg-player-name')
+    return !getPlayerName()
   })
   const [inputName, setInputName] = useState('')
   
-  const [sheetUrl, setSheetUrl] = useState(() => {
-    return localStorage.getItem('solo-rpg-sheet-url') || ''
-  })
-  const [isSetup, setIsSetup] = useState(() => {
-    return !!localStorage.getItem('solo-rpg-sheet-url')
-  })
+  const [sheetUrl, setSheetUrl] = useState(() => getSheetUrl())
+  const [isSetup, setIsSetup] = useState(() => getIsSetup())
 
   const handleSetupComplete = async (url) => {
     try {

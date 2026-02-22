@@ -51,45 +51,67 @@ class ErrorBoundary extends Component {
 
   render() {
     if (this.state.hasError) {
+      // 簡化的內聯樣式，確保在各種環境下都能顯示
       return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-gray-800 border-2 border-red-500 rounded-xl p-6 shadow-2xl">
-            <div className="text-center mb-6">
-              <div className="text-6xl mb-4">😵</div>
-              <h1 className="text-2xl font-bold text-red-400 mb-2">
+        <div style={{ 
+          minHeight: '100vh', 
+          backgroundColor: '#111827', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          padding: '1rem',
+          fontFamily: 'system-ui, -apple-system, sans-serif'
+        }}>
+          <div style={{ 
+            maxWidth: '28rem', 
+            width: '100%', 
+            backgroundColor: '#1f2937', 
+            border: '2px solid #ef4444', 
+            borderRadius: '0.75rem', 
+            padding: '1.5rem',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          }}>
+            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ fontSize: '3.75rem', marginBottom: '1rem' }}>😵</div>
+              <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#f87171', marginBottom: '0.5rem' }}>
                 系統出現問題
               </h1>
-              <p className="text-gray-400 text-sm">
+              <p style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
                 應用程式發生錯誤，請嘗試以下操作
               </p>
             </div>
 
-            {/* 錯誤詳情（僅在開發環境顯示） */}
-            {process.env.NODE_ENV === 'development' && this.state.error && (
-              <div className="mb-4 p-3 bg-red-900/30 border border-red-500/30 rounded-lg overflow-auto max-h-32">
-                <p className="text-red-300 text-xs font-mono">
+            {/* 錯誤詳情（始終顯示，方便診斷） */}
+            {this.state.error && (
+              <div style={{ marginBottom: '1rem', padding: '0.75rem', backgroundColor: 'rgba(127, 29, 29, 0.3)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '0.5rem', overflow: 'auto', maxHeight: '8rem' }}>
+                <p style={{ color: '#fca5a5', fontSize: '0.75rem', fontFamily: 'monospace' }}>
                   {this.state.error.toString()}
                 </p>
+                {this.state.errorInfo && (
+                  <p style={{ color: '#f87171', fontSize: '0.75rem', marginTop: '0.5rem', fontFamily: 'monospace' }}>
+                    {this.state.errorInfo.componentStack}
+                  </p>
+                )}
               </div>
             )}
 
-            <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <button
                 onClick={this.handleReset}
-                className="w-full px-6 py-3 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold rounded-lg transition-all duration-200 shadow-lg"
+                style={{ width: '100%', padding: '0.75rem 1.5rem', background: 'linear-gradient(to right, #dc2626, #db2777)', color: 'white', fontWeight: 'bold', borderRadius: '0.5rem', border: 'none', cursor: 'pointer' }}
               >
                 🗑️ 清除資料並重新開始
               </button>
               
               <button
                 onClick={this.handleReload}
-                className="w-full px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-lg transition-all duration-200"
+                style={{ width: '100%', padding: '0.75rem 1.5rem', backgroundColor: '#374151', color: 'white', fontWeight: 'bold', borderRadius: '0.5rem', border: 'none', cursor: 'pointer' }}
               >
                 🔄 重新載入頁面
               </button>
             </div>
 
-            <p className="mt-4 text-center text-gray-500 text-xs">
+            <p style={{ marginTop: '1rem', textAlign: 'center', color: '#6b7280', fontSize: '0.75rem' }}>
               如果問題持續發生，請聯繫開發者
             </p>
           </div>
