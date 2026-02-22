@@ -34,29 +34,39 @@ export default function Dashboard({ sheetUrl, onReset }) {
 
   // 先定義所有狀態變量
   const [questData, setQuestData] = useState(() => {
-    const saved = localStorage.getItem('solo-rpg-quests')
-    if (saved) {
-      const data = JSON.parse(saved)
-      // 使用智能重置：只重置完成狀態，保留所有自訂設定
-      if (shouldResetDaily(data.lastUpdate)) {
-        console.log('🌅 凌晨4點已過，執行智能重置')
-        
-        // ⚠️ 重要：在重置前，先確保昨天的數據已保存到 historyData
-        // 因為重置會清空完成狀態，如果不先保存就會丟失昨天的進度
-        const yesterday = new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split('T')[0]
-        const savedHistory = localStorage.getItem('solo-rpg-history')
-        const history = savedHistory ? JSON.parse(savedHistory) : []
-        const yesterdayExists = history.some(h => h.date === yesterday)
-        
-        if (!yesterdayExists) {
-          console.warn('⚠️ 昨天的數據尚未保存！立即保存昨天的最終狀態')
-          // 這種情況不應該發生，但作為保險措施
-          // 我們無法在這裡計算昨天的進度，只能依賴 useEffect 的自動保存
+    try {
+      const saved = localStorage.getItem('solo-rpg-quests')
+      if (saved) {
+        const data = JSON.parse(saved)
+        // 使用智能重置：只重置完成狀態，保留所有自訂設定
+        if (shouldResetDaily(data.lastUpdate)) {
+          console.log('🌅 凌晨4點已過，執行智能重置')
+          
+          // ⚠️ 重要：在重置前，先確保昨天的數據已保存到 historyData
+          // 因為重置會清空完成狀態，如果不先保存就會丟失昨天的進度
+          const yesterday = new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split('T')[0]
+          const savedHistory = localStorage.getItem('solo-rpg-history')
+          let history = []
+          try {
+            history = savedHistory ? JSON.parse(savedHistory) : []
+          } catch (e) {
+            console.error('解析 history 失敗:', e)
+          }
+          const yesterdayExists = history.some(h => h.date === yesterday)
+          
+          if (!yesterdayExists) {
+            console.warn('⚠️ 昨天的數據尚未保存！立即保存昨天的最終狀態')
+            // 這種情況不應該發生，但作為保險措施
+            // 我們無法在這裡計算昨天的進度，只能依賴 useEffect 的自動保存
+          }
+          
+          return smartDailyReset(data)
         }
-        
-        return smartDailyReset(data)
+        return data
       }
-      return data
+    } catch (error) {
+      console.error('🚨 解析 localStorage questData 失敗:', error)
+      localStorage.removeItem('solo-rpg-quests')
     }
     return getInitialQuestData()
   })
@@ -577,8 +587,14 @@ export default function Dashboard({ sheetUrl, onReset }) {
   }, [totalDays])
 
   const [historyData, setHistoryData] = useState(() => {
-    const saved = localStorage.getItem('solo-rpg-history')
-    return saved ? JSON.parse(saved) : []
+    try {
+      const saved = localStorage.getItem('solo-rpg-history')
+      return saved ? JSON.parse(saved) : []
+    } catch (error) {
+      console.error('🚨 解析 localStorage history 失敗:', error)
+      localStorage.removeItem('solo-rpg-history')
+      return []
+    }
   })
 
   // 儲存今日數據到歷史
