@@ -3,16 +3,25 @@ import { useState, useEffect } from 'react'
 export default function RealTimeHPBar({ questData, onUpdate }) {
   const [currentTime, setCurrentTime] = useState(new Date())
   const waterTarget = questData?.waterTarget || 2400
+  
+  // 安全地檢查 Notification API 是否可用（Android Chrome 不支援直接 new Notification）
+  const isNotificationSupported = typeof Notification !== 'undefined' && typeof Notification.requestPermission === 'function'
   const [notificationPermission, setNotificationPermission] = useState(
-    typeof Notification !== 'undefined' ? Notification.permission : 'denied'
+    isNotificationSupported ? Notification.permission : 'denied'
   )
 
   // 請求通知權限
   useEffect(() => {
-    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-      Notification.requestPermission().then(permission => {
-        setNotificationPermission(permission)
-      })
+    if (isNotificationSupported && Notification.permission === 'default') {
+      try {
+        Notification.requestPermission().then(permission => {
+          setNotificationPermission(permission)
+        }).catch(() => {
+          setNotificationPermission('denied')
+        })
+      } catch (e) {
+        setNotificationPermission('denied')
+      }
     }
   }, [])
 
@@ -233,14 +242,27 @@ export default function RealTimeHPBar({ questData, onUpdate }) {
     const lastWarning = lastWarningTime || 0
 
     // 至少間隔5分鐘才發送下一次通知
+    // 注意：Android Chrome 不支援 new Notification()，需要使用 ServiceWorkerRegistration.showNotification()
     if (needsWaterWarning && notificationPermission === 'granted' && (now - lastWarning) > 5 * 60 * 1000) {
-      new Notification('💧 Solo RPG - 該喝水了！', {
-        body: `飲水HP已降至 ${waterHP}%（50%中），請立即補充至少200cc水分！`,
-        icon: '/vite.svg',
-        tag: 'water-warning',
-        requireInteraction: true
-      })
-      setLastWarningTime(now)
+      try {
+        // 檢查是否可以使用 ServiceWorkerRegistration
+        if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+          navigator.serviceWorker.ready.then(registration => {
+            registration.showNotification('💧 Solo RPG - 該喝水了！', {
+              body: `飲水HP已降至 ${waterHP}%（50%中），請立即補充至少200cc水分！`,
+              icon: '/vite.svg',
+              tag: 'water-warning',
+              requireInteraction: true
+            })
+          })
+        } else {
+          // 如果沒有 ServiceWorker，直接跳過通知（不使用 new Notification）
+          console.log('ℹ️ ServiceWorker 不可用，跳過瀏覽器通知')
+        }
+        setLastWarningTime(now)
+      } catch (e) {
+        console.error('發送通知失敗:', e)
+      }
     }
   }, [needsWaterWarning, waterHP, notificationPermission, lastWarningTime])
 
