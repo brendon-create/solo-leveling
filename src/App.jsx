@@ -70,6 +70,7 @@ function App() {
           <div className="text-center mb-6">
             <div className="text-5xl mb-4 animate-pulse">⚡</div>
             <p className="text-gray-400 text-sm mb-4">系統檢測到您已成為玩家</p>
+            <p className="text-yellow-400 text-xs mb-4">⚠️ 請尋找離你最近的電腦，執行初始化程序，預備開始升級</p>
             <h3 className="text-2xl font-bold text-purple-300">請輸入角色名稱</h3>
           </div>
           <input
